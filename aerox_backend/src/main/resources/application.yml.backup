@@ -1,0 +1,246 @@
+
+# spring:
+#   application:
+#     name: mydev-ecommerce
+
+#   config:
+#     import: "optional:file:.env[.properties]"
+
+#   profiles:
+#     active: ${SPRING_PROFILES_ACTIVE:prod}
+
+#   datasource:
+#     url: ${DB_URL}
+#     username: ${DB_USER}
+#     password: ${DB_PASS}
+#     driver-class-name: org.postgresql.Driver
+
+#   jpa:
+#     hibernate:
+#       ddl-auto: validate
+#     open-in-view: false
+#     properties:
+#       hibernate:
+#         format_sql: true
+
+#   flyway:
+#     enabled: true
+#     baseline-on-migrate: false
+#     locations: classpath:db/migration
+
+#   servlet:
+#     multipart:
+#       max-file-size: 100MB
+#       max-request-size: 100MB
+
+# server:
+#   address: 0.0.0.0
+#   port: ${PORT:8080}
+
+# management:
+#   endpoints:
+#     web:
+#       exposure:
+#         include: health,info
+#   endpoint:
+#     health:
+#       show-details: always
+
+# app:
+#   jwt:
+#     secret: ${JWT_SECRET}
+#     accessTtlMinutes: 60
+
+#   mail:
+#     enabled: ${MAIL_ENABLED:true}
+#     from-email: ${MAIL_FROM_EMAIL}
+#     from-name: ${MAIL_FROM_NAME:Trendz Firenze}
+#     admin-email: ${MAIL_ADMIN_EMAIL}
+#     brevo:
+#       api-key: ${BREVO_API_KEY}
+
+#   frontend:
+#     reset-password-url: ${FRONTEND_RESET_PASSWORD_URL:http://localhost:3000/reset-password}
+
+#   password-reset:
+#     expiry-minutes: ${PASSWORD_RESET_EXPIRY_MINUTES:30}
+
+#   otp:
+#     provider: ${OTP_PROVIDER:DEV_LOG}
+
+#   mobile-password-reset:
+#     expiry-minutes: ${MOBILE_PASSWORD_RESET_EXPIRY_MINUTES:5}
+#     max-attempts: ${MOBILE_PASSWORD_RESET_MAX_ATTEMPTS:5}
+
+#   whatsapp:
+#     enabled: ${WHATSAPP_ENABLED:false}
+#     access-token: ${WHATSAPP_ACCESS_TOKEN:}
+#     phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID:}
+#     template-name: ${WHATSAPP_TEMPLATE_NAME:order_confirmation}
+#     language-code: ${WHATSAPP_LANGUAGE_CODE:en}
+
+#   instagram:
+#     admin-refresh-secret: ${INSTAGRAM_ADMIN_REFRESH_SECRET}
+
+# razorpay:
+#   key-id: ${RAZORPAY_KEY_ID:dummy}
+#   key-secret: ${RAZORPAY_KEY_SECRET:dummy}
+
+# cloudinary:
+#   cloud-name: ${CLOUDINARY_CLOUD_NAME}
+#   api-key: ${CLOUDINARY_API_KEY}
+#   api-secret: ${CLOUDINARY_API_SECRET}
+
+# instagram:
+#   graph-version: ${INSTAGRAM_GRAPH_VERSION:v25.0}
+#   app-secret: ${INSTAGRAM_APP_SECRET}
+#   refresh-threshold-days: ${INSTAGRAM_REFRESH_THRESHOLD_DAYS:15}
+#   scheduled-refresh-cron: "${INSTAGRAM_REFRESH_CRON:0 0 3 * * *}"
+#   cache:
+#     refresh-limit: ${INSTAGRAM_CACHE_REFRESH_LIMIT:20}
+#   media-refresh-cron: "${INSTAGRAM_MEDIA_REFRESH_CRON:0 */20 * * * *}"
+
+# logging:
+#   level:
+#     root: INFO
+#     com.mydev.ecommerce.instagram: INFO
+#     org.springframework.web: INFO
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```yaml
+spring:
+  application:
+    name: mydev-ecommerce
+
+  config:
+    import: "optional:file:.env[.properties]"
+
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:prod}
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASS}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: public
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    schemas: public
+    default-schema: public
+
+    # Temporary: keep true only for the first startup after
+    # deleting the old flyway_schema_history table.
+    baseline-on-migrate: true
+    baseline-version: "2"
+    baseline-description: "Combined schema and seed baseline"
+
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+server:
+  address: 0.0.0.0
+  port: ${PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    accessTtlMinutes: 60
+
+  mail:
+    enabled: ${MAIL_ENABLED:true}
+    from-email: ${MAIL_FROM_EMAIL}
+    from-name: ${MAIL_FROM_NAME:Trendz Firenze}
+    admin-email: ${MAIL_ADMIN_EMAIL}
+    brevo:
+      api-key: ${BREVO_API_KEY}
+
+  frontend:
+    reset-password-url: ${FRONTEND_RESET_PASSWORD_URL:http://localhost:3000/reset-password}
+
+  password-reset:
+    expiry-minutes: ${PASSWORD_RESET_EXPIRY_MINUTES:30}
+
+  otp:
+    provider: ${OTP_PROVIDER:DEV_LOG}
+
+  mobile-password-reset:
+    expiry-minutes: ${MOBILE_PASSWORD_RESET_EXPIRY_MINUTES:5}
+    max-attempts: ${MOBILE_PASSWORD_RESET_MAX_ATTEMPTS:5}
+
+  whatsapp:
+    enabled: ${WHATSAPP_ENABLED:false}
+    access-token: ${WHATSAPP_ACCESS_TOKEN:}
+    phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID:}
+    template-name: ${WHATSAPP_TEMPLATE_NAME:order_confirmation}
+    language-code: ${WHATSAPP_LANGUAGE_CODE:en}
+
+  instagram:
+    admin-refresh-secret: ${INSTAGRAM_ADMIN_REFRESH_SECRET}
+
+razorpay:
+  key-id: ${RAZORPAY_KEY_ID:dummy}
+  key-secret: ${RAZORPAY_KEY_SECRET:dummy}
+
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME}
+  api-key: ${CLOUDINARY_API_KEY}
+  api-secret: ${CLOUDINARY_API_SECRET}
+
+instagram:
+  graph-version: ${INSTAGRAM_GRAPH_VERSION:v25.0}
+  app-secret: ${INSTAGRAM_APP_SECRET}
+  refresh-threshold-days: ${INSTAGRAM_REFRESH_THRESHOLD_DAYS:15}
+  scheduled-refresh-cron: "${INSTAGRAM_REFRESH_CRON:0 0 3 * * * *}"
+  cache:
+    refresh-limit: ${INSTAGRAM_CACHE_REFRESH_LIMIT:20}
+  media-refresh-cron: "${INSTAGRAM_MEDIA_REFRESH_CRON:0 */20 * * * *}"
+
+logging:
+  level:
+    root: INFO
+    com.mydev.ecommerce.instagram: INFO
+    org.springframework.web: INFO
+```

@@ -1,0 +1,11 @@
+trendzaerox.com, www.trendzaerox.com {
+    encode gzip zstd
+
+    reverse_proxy frontend:3000
+}
+
+api.trendzaerox.com {
+    encode gzip zstd
+
+    reverse_proxy backend:8080
+}

@@ -1,0 +1,152 @@
+﻿
+
+
+
+spring:
+  application:
+    name: mydev-ecommerce
+
+  config:
+    import: "optional:file:.env[.properties]"
+
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:prod}
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASS}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: public
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    schemas: public
+    default-schema: public
+    baseline-on-migrate: false
+    baseline-version: "2"
+    baseline-description: "Combined schema and seed baseline"
+    ignore-migration-patterns: "*:missing"
+
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+server:
+  address: 0.0.0.0
+  port: ${PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    accessTtlMinutes: 60
+
+  mail:
+    enabled: ${MAIL_ENABLED:true}
+    from-email: ${MAIL_FROM_EMAIL}
+    from-name: ${MAIL_FROM_NAME:Trendz AeroX}
+    admin-email: ${MAIL_ADMIN_EMAIL}
+    brevo:
+      api-key: ${BREVO_API_KEY}
+
+  review-email:
+    delay-days: ${REVIEW_EMAIL_DELAY_DAYS:2}
+    batch-size: ${REVIEW_EMAIL_BATCH_SIZE:20}
+    max-attempts: ${REVIEW_EMAIL_MAX_ATTEMPTS:5}
+    scheduler-fixed-delay-ms: ${REVIEW_EMAIL_SCHEDULER_FIXED_DELAY_MS:900000}
+    initial-delay-ms: ${REVIEW_EMAIL_INITIAL_DELAY_MS:60000}
+
+  frontend:
+    base-url: ${FRONTEND_URL:http://localhost:3000}
+    reset-password-url: ${FRONTEND_RESET_PASSWORD_URL:http://localhost:3000/reset-password}
+
+  shipment:
+    delhivery-tracking-url: ${DELHIVERY_TRACKING_URL:https://www.delhivery.com/tracking}
+
+  shiprocket:
+    enabled: ${SHIPROCKET_ENABLED:true}
+    base-url: ${SHIPROCKET_BASE_URL:https://apiv2.shiprocket.in}
+    email: ${SHIPROCKET_EMAIL:}
+    password: ${SHIPROCKET_PASSWORD:}
+    pickup-location: ${SHIPROCKET_PICKUP_LOCATION:warehouse}
+
+    default-length-cm: ${SHIPROCKET_DEFAULT_LENGTH_CM:10}
+    default-breadth-cm: ${SHIPROCKET_DEFAULT_BREADTH_CM:10}
+    default-height-cm: ${SHIPROCKET_DEFAULT_HEIGHT_CM:5}
+    default-weight-kg: ${SHIPROCKET_DEFAULT_WEIGHT_KG:0.50}
+
+    tracking-base-url: ${SHIPROCKET_TRACKING_BASE_URL:https://shiprocket.co/tracking}
+    token-valid-hours: ${SHIPROCKET_TOKEN_VALID_HOURS:230}
+
+    webhook-secret: ${SHIPROCKET_WEBHOOK_SECRET:}
+
+    tracking-refresh:
+      enabled: ${SHIPROCKET_TRACKING_REFRESH_ENABLED:true}
+      fixed-delay-ms: ${SHIPROCKET_TRACKING_REFRESH_FIXED_DELAY_MS:1800000}
+      initial-delay-ms: ${SHIPROCKET_TRACKING_REFRESH_INITIAL_DELAY_MS:120000}
+      batch-size: ${SHIPROCKET_TRACKING_REFRESH_BATCH_SIZE:25}
+
+  password-reset:
+    expiry-minutes: ${PASSWORD_RESET_EXPIRY_MINUTES:30}
+
+  otp:
+    provider: ${OTP_PROVIDER:DEV_LOG}
+
+  mobile-password-reset:
+    expiry-minutes: ${MOBILE_PASSWORD_RESET_EXPIRY_MINUTES:5}
+    max-attempts: ${MOBILE_PASSWORD_RESET_MAX_ATTEMPTS:5}
+
+  whatsapp:
+    enabled: ${WHATSAPP_ENABLED:false}
+    access-token: ${WHATSAPP_ACCESS_TOKEN:}
+    phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID:}
+    template-name: ${WHATSAPP_TEMPLATE_NAME:order_confirmation}
+    language-code: ${WHATSAPP_LANGUAGE_CODE:en}
+
+  instagram:
+    admin-refresh-secret: ${INSTAGRAM_ADMIN_REFRESH_SECRET}
+
+razorpay:
+  key-id: ${RAZORPAY_KEY_ID:dummy}
+  key-secret: ${RAZORPAY_KEY_SECRET:dummy}
+  webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:dummy}
+
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME}
+  api-key: ${CLOUDINARY_API_KEY}
+  api-secret: ${CLOUDINARY_API_SECRET}
+
+instagram:
+  graph-version: ${INSTAGRAM_GRAPH_VERSION:v25.0}
+  app-secret: ${INSTAGRAM_APP_SECRET}
+  refresh-threshold-days: ${INSTAGRAM_REFRESH_THRESHOLD_DAYS:15}
+  scheduled-refresh-cron: "${INSTAGRAM_REFRESH_CRON:0 0 3 * * *}"
+  cache:
+    refresh-limit: ${INSTAGRAM_CACHE_REFRESH_LIMIT:20}
+  media-refresh-cron: "${INSTAGRAM_MEDIA_REFRESH_CRON:0 */20 * * * *}"
+
+logging:
+  level:
+    root: INFO
+    com.mydev.ecommerce.instagram: INFO
+    com.mydev.ecommerce.shipment: INFO
+    org.springframework.web: INFO

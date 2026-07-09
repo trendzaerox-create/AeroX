@@ -1,0 +1,166 @@
+# Docker Compose file for Trendz AeroX production setup
+# It runs PostgreSQL, Spring Boot backend, Next.js frontend, and Caddy reverse proxy
+
+services:
+  # PostgreSQL database service
+  postgres:
+    # Use official PostgreSQL version 16 Alpine image
+    # Alpine is lightweight and good for VPS/docker production
+    image: postgres:16-alpine
+
+    # Fixed container name for easy commands like docker logs aerox-postgres
+    container_name: aerox-postgres
+
+    # Restart container automatically unless you manually stop it
+    restart: unless-stopped
+
+    # Environment variables used to create the database
+    environment:
+      # Database name
+      POSTGRES_DB: aeroxdb
+
+      # Database username
+      POSTGRES_USER: aerox_user
+
+      # Database password
+      # Change this to a strong password in production
+      POSTGRES_PASSWORD: change_this_strong_password
+
+    # Store database data permanently
+    # Without this, data will be lost when container is removed
+    volumes:
+      # postgres_data is a Docker volume
+      # /var/lib/postgresql/data is PostgreSQL's internal data folder
+      - postgres_data:/var/lib/postgresql/data
+
+    # Connect PostgreSQL to custom Docker network
+    networks:
+      - aerox_net
+
+
+  # Spring Boot backend service
+  backend:
+    # Build backend Docker image from local backend folder
+    build:
+      # Backend project folder path
+      context: ./aerox_backend
+
+      # Dockerfile inside aerox_backend folder
+      dockerfile: Dockerfile
+
+    # Fixed container name for backend
+    container_name: aerox-backend
+
+    # Restart backend automatically unless manually stopped
+    restart: unless-stopped
+
+    # Load backend environment variables from this file
+    # Example: DB_URL, DB_USER, DB_PASS, JWT_SECRET, etc.
+    env_file:
+      - ./aerox_backend/.env
+
+    # Start postgres before backend
+    # Important: this does not guarantee postgres is fully ready
+    depends_on:
+      - postgres
+
+    # Connect backend to same Docker network
+    networks:
+      - aerox_net
+
+
+  # Next.js frontend service
+  frontend:
+    # Build frontend Docker image from local frontend folder
+    build:
+      # Frontend project folder path
+      context: ./aerox_frontend
+
+      # Dockerfile inside aerox_frontend folder
+      dockerfile: Dockerfile
+
+      # Build-time variables for Next.js
+      args:
+        # Public API URL used by frontend
+        # In browser, frontend will call this backend domain
+        NEXT_PUBLIC_API_BASE_URL: https://api.trendzaerox.com
+
+    # Fixed container name for frontend
+    container_name: aerox-frontend
+
+    # Restart frontend automatically unless manually stopped
+    restart: unless-stopped
+
+    # Start backend before frontend
+    depends_on:
+      - backend
+
+    # Connect frontend to same Docker network
+    networks:
+      - aerox_net
+
+
+  # Caddy reverse proxy service
+  # Handles domain routing and automatic HTTPS SSL certificates
+  caddy:
+    # Use official Caddy version 2 Alpine image
+    image: caddy:2-alpine
+
+    # Fixed container name for Caddy
+    container_name: aerox-caddy
+
+    # Restart Caddy automatically unless manually stopped
+    restart: unless-stopped
+
+    # Expose HTTP and HTTPS ports to public internet
+    ports:
+      # Public HTTP port
+      # Required for HTTP traffic and SSL certificate generation
+      - "80:80"
+
+      # Public HTTPS port
+      # Required for secure website access
+      - "443:443"
+
+    # Mount Caddy config and persistent SSL data
+    volumes:
+      # Local Caddyfile mapped into Caddy container
+      # This file controls domain routing
+      - ./Caddyfile:/etc/caddy/Caddyfile
+
+      # Stores SSL certificates and Caddy data permanently
+      - caddy_data:/data
+
+      # Stores Caddy configuration permanently
+      - caddy_config:/config
+
+    # Start frontend and backend before Caddy
+    depends_on:
+      - frontend
+      - backend
+
+    # Connect Caddy to same Docker network
+    networks:
+      - aerox_net
+
+
+# Docker named volumes
+# These keep data safe even if containers are removed
+volumes:
+  # Persistent PostgreSQL database data
+  postgres_data:
+
+  # Persistent Caddy SSL certificate data
+  caddy_data:
+
+  # Persistent Caddy config data
+  caddy_config:
+
+
+# Docker custom network
+# All services communicate privately through this network
+networks:
+  # Custom bridge network for this project
+  aerox_net:
+    # Bridge is the default Docker network driver
+    driver: bridge
