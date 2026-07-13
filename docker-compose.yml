@@ -1,14 +1,116 @@
+# services:
+#   postgres:
+#     image: postgres:16-alpine
+#     container_name: aerox-postgres
+#     restart: unless-stopped
+#     environment:
+#       POSTGRES_DB: aeroxdb
+#       POSTGRES_USER: aerox_user
+#       POSTGRES_PASSWORD: change_this_strong_password
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+#     networks:
+#       - aerox_net
+
+#   backend:
+#     build:
+#       context: ./aerox_backend
+#       dockerfile: Dockerfile
+#     container_name: aerox-backend
+#     restart: unless-stopped
+#     env_file:
+#       - ./aerox_backend/.env
+#     depends_on:
+#       - postgres
+#     networks:
+#       - aerox_net
+
+#   frontend:
+#     build:
+#       context: ./aerox_frontend
+#       dockerfile: Dockerfile
+#       args:
+#         NEXT_PUBLIC_API_BASE: https://api.trendzaerox.com
+#         NEXT_PUBLIC_API_BASE_URL: https://api.trendzaerox.com
+#         NEXT_PUBLIC_API_URL: https://api.trendzaerox.com
+#         API_BASE_URL: https://api.trendzaerox.com
+#     container_name: aerox-frontend
+#     restart: unless-stopped
+#     environment:
+#       NEXT_PUBLIC_API_BASE: https://api.trendzaerox.com
+#       NEXT_PUBLIC_API_BASE_URL: https://api.trendzaerox.com
+#       NEXT_PUBLIC_API_URL: https://api.trendzaerox.com
+#       API_BASE_URL: https://api.trendzaerox.com
+#     depends_on:
+#       - backend
+#     networks:
+#       - aerox_net
+
+#   caddy:
+#     image: caddy:2-alpine
+#     container_name: aerox-caddy
+#     restart: unless-stopped
+#     depends_on:
+#       - frontend
+#       - backend
+#     ports:
+#       - "80:80"
+#       - "443:443"
+#     volumes:
+#       - ./Caddyfile:/etc/caddy/Caddyfile
+#       - caddy_data:/data
+#       - caddy_config:/config
+#     networks:
+#       - aerox_net
+
+# volumes:
+#   postgres_data:
+#   caddy_data:
+#   caddy_config:
+
+# networks:
+#   aerox_net:
+#     driver: bridge
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 services:
   postgres:
     image: postgres:16-alpine
     container_name: aerox-postgres
     restart: unless-stopped
+
     environment:
       POSTGRES_DB: aeroxdb
       POSTGRES_USER: aerox_user
       POSTGRES_PASSWORD: change_this_strong_password
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U aerox_user -d aeroxdb
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
     networks:
       - aerox_net
 
@@ -16,12 +118,24 @@ services:
     build:
       context: ./aerox_backend
       dockerfile: Dockerfile
+
     container_name: aerox-backend
     restart: unless-stopped
+
     env_file:
       - ./aerox_backend/.env
+
+    environment:
+      UPLOAD_DIR: /app/uploads
+      PUBLIC_UPLOAD_BASE_URL: https://api.trendzaerox.com/uploads
+
+    volumes:
+      - ./uploads:/app/uploads
+
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+
     networks:
       - aerox_net
 
@@ -29,20 +143,25 @@ services:
     build:
       context: ./aerox_frontend
       dockerfile: Dockerfile
+
       args:
         NEXT_PUBLIC_API_BASE: https://api.trendzaerox.com
         NEXT_PUBLIC_API_BASE_URL: https://api.trendzaerox.com
         NEXT_PUBLIC_API_URL: https://api.trendzaerox.com
         API_BASE_URL: https://api.trendzaerox.com
+
     container_name: aerox-frontend
     restart: unless-stopped
+
     environment:
       NEXT_PUBLIC_API_BASE: https://api.trendzaerox.com
       NEXT_PUBLIC_API_BASE_URL: https://api.trendzaerox.com
       NEXT_PUBLIC_API_URL: https://api.trendzaerox.com
       API_BASE_URL: https://api.trendzaerox.com
+
     depends_on:
       - backend
+
     networks:
       - aerox_net
 
@@ -50,16 +169,21 @@ services:
     image: caddy:2-alpine
     container_name: aerox-caddy
     restart: unless-stopped
+
     depends_on:
       - frontend
       - backend
+
     ports:
       - "80:80"
       - "443:443"
+
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./uploads:/srv/uploads:ro
       - caddy_data:/data
       - caddy_config:/config
+
     networks:
       - aerox_net
 

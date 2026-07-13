@@ -168,25 +168,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 spring:
   application:
     name: mydev-ecommerce
@@ -206,7 +187,9 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+
     open-in-view: false
+
     properties:
       hibernate:
         format_sql: true
@@ -230,6 +213,7 @@ spring:
 server:
   address: 0.0.0.0
   port: ${PORT:8080}
+  forward-headers-strategy: framework
 
 management:
   endpoints:
@@ -243,8 +227,8 @@ management:
 
 app:
   storage:
-    upload-dir: ${UPLOAD_DIR:./uploads}
-    url-prefix: ${UPLOAD_URL_PREFIX:/uploads}
+    upload-dir: ${UPLOAD_DIR:/app/uploads}
+    public-base-url: ${PUBLIC_UPLOAD_BASE_URL:https://api.trendzaerox.com/uploads}
 
   jwt:
     secret: ${JWT_SECRET}
@@ -267,8 +251,8 @@ app:
     initial-delay-ms: ${REVIEW_EMAIL_INITIAL_DELAY_MS:60000}
 
   frontend:
-    base-url: ${FRONTEND_URL:http://localhost:3000}
-    reset-password-url: ${FRONTEND_RESET_PASSWORD_URL:http://localhost:3000/reset-password}
+    base-url: ${FRONTEND_URL:https://trendzaerox.com}
+    reset-password-url: ${FRONTEND_RESET_PASSWORD_URL:https://trendzaerox.com/reset-password}
 
   shipment:
     delhivery-tracking-url: ${DELHIVERY_TRACKING_URL:https://www.delhivery.com/tracking}
@@ -325,6 +309,7 @@ instagram:
   graph-version: ${INSTAGRAM_GRAPH_VERSION:v25.0}
   app-secret: ${INSTAGRAM_APP_SECRET}
   refresh-threshold-days: ${INSTAGRAM_REFRESH_THRESHOLD_DAYS:15}
+
   scheduled-refresh-cron: "${INSTAGRAM_REFRESH_CRON:0 0 3 * * *}"
 
   cache:
@@ -335,6 +320,7 @@ instagram:
 logging:
   level:
     root: INFO
+    com.mydev.ecommerce.common.service.FileStorageService: INFO
     com.mydev.ecommerce.instagram: INFO
     com.mydev.ecommerce.shipment: INFO
     org.springframework.web: INFO

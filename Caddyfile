@@ -1,11 +1,33 @@
-trendzaerox.com, www.trendzaerox.com {
-    encode gzip zstd
+{
+    email trendzfirenzeemployees@gmail.com
+}
+
+www.trendzaerox.com {
+    redir https://trendzaerox.com{uri} permanent
+}
+
+trendzaerox.com {
+    encode zstd gzip
 
     reverse_proxy frontend:3000
 }
 
 api.trendzaerox.com {
-    encode gzip zstd
+    encode zstd gzip
 
-    reverse_proxy backend:8080
+    handle_path /uploads/* {
+        root * /srv/uploads
+
+        header {
+            Cache-Control "public, max-age=31536000, immutable"
+            X-Content-Type-Options "nosniff"
+            Access-Control-Allow-Origin "*"
+        }
+
+        file_server
+    }
+
+    handle {
+        reverse_proxy backend:8080
+    }
 }
