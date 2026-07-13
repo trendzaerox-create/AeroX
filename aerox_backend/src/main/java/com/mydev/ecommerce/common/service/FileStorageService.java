@@ -375,7 +375,7 @@ public class FileStorageService {
 
         return saveFile(
                 file,
-                "trendz-firenze/products"
+                "trendz-aerox/products"
         );
     }
 
@@ -385,7 +385,7 @@ public class FileStorageService {
 
         return saveFile(
                 file,
-                "trendz-firenze/gift-boxes"
+                "trendz-aerox/gift-boxes"
         );
     }
 
@@ -395,7 +395,7 @@ public class FileStorageService {
 
         return saveFile(
                 file,
-                "trendz-firenze/brand-showcases"
+                "trendz-aerox/brand-showcases"
         );
     }
 
@@ -405,7 +405,7 @@ public class FileStorageService {
 
         return saveFile(
                 file,
-                "trendz-firenze/categories"
+                "trendz-aerox/categories"
         );
     }
 
