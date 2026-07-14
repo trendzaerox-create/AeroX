@@ -88,28 +88,28 @@
 
 
 
-
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     container_name: aerox-postgres
     restart: unless-stopped
 
     environment:
-      POSTGRES_DB: aeroxdb
-      POSTGRES_USER: aerox_user
-      POSTGRES_PASSWORD: change_this_strong_password
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
 
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres18_data:/var/lib/postgresql
 
     healthcheck:
       test:
         - CMD-SHELL
-        - pg_isready -U aerox_user -d aeroxdb
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
       interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 20s
 
     networks:
       - aerox_net
@@ -126,6 +126,10 @@ services:
       - ./aerox_backend/.env
 
     environment:
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASS: ${POSTGRES_PASSWORD}
+
       UPLOAD_DIR: /app/uploads
       PUBLIC_UPLOAD_BASE_URL: https://api.trendzaerox.com/uploads
 
@@ -188,7 +192,9 @@ services:
       - aerox_net
 
 volumes:
-  postgres_data:
+  postgres18_data:
+    name: aerox-postgres18-data
+
   caddy_data:
   caddy_config:
 
