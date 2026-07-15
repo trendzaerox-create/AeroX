@@ -1,18 +1,17 @@
-
-
-
 package com.mydev.ecommerce.common.constants;
 
-public class FileConstants {
+public final class FileConstants {
 
-    private FileConstants() {}
+    private FileConstants() {
+        // Prevent object creation
+    }
 
     public static final String PRODUCT_CLOUDINARY_FOLDER =
-            "trendz-firenze/products";
+            "trendz-aerox/products";
 
     public static final String GIFT_BOX_CLOUDINARY_FOLDER =
-            "trendz-firenze/gift-boxes";
+            "trendz-aerox/gift-boxes";
 
     public static final String BRAND_SHOWCASE_CLOUDINARY_FOLDER =
-            "trendz-firenze/brand-showcases";
+            "trendz-aerox/brand-showcases";
 }
