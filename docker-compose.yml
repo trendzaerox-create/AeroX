@@ -1,103 +1,13 @@
-# services:
-#   postgres:
-#     image: postgres:16-alpine
-#     container_name: aerox-postgres
-#     restart: unless-stopped
-#     environment:
-#       POSTGRES_DB: aeroxdb
-#       POSTGRES_USER: aerox_user
-#       POSTGRES_PASSWORD: change_this_strong_password
-#     volumes:
-#       - postgres_data:/var/lib/postgresql/data
-#     networks:
-#       - aerox_net
-
-#   backend:
-#     build:
-#       context: ./aerox_backend
-#       dockerfile: Dockerfile
-#     container_name: aerox-backend
-#     restart: unless-stopped
-#     env_file:
-#       - ./aerox_backend/.env
-#     depends_on:
-#       - postgres
-#     networks:
-#       - aerox_net
-
-#   frontend:
-#     build:
-#       context: ./aerox_frontend
-#       dockerfile: Dockerfile
-#       args:
-#         NEXT_PUBLIC_API_BASE: https://api.trendzaerox.com
-#         NEXT_PUBLIC_API_BASE_URL: https://api.trendzaerox.com
-#         NEXT_PUBLIC_API_URL: https://api.trendzaerox.com
-#         API_BASE_URL: https://api.trendzaerox.com
-#     container_name: aerox-frontend
-#     restart: unless-stopped
-#     environment:
-#       NEXT_PUBLIC_API_BASE: https://api.trendzaerox.com
-#       NEXT_PUBLIC_API_BASE_URL: https://api.trendzaerox.com
-#       NEXT_PUBLIC_API_URL: https://api.trendzaerox.com
-#       API_BASE_URL: https://api.trendzaerox.com
-#     depends_on:
-#       - backend
-#     networks:
-#       - aerox_net
-
-#   caddy:
-#     image: caddy:2-alpine
-#     container_name: aerox-caddy
-#     restart: unless-stopped
-#     depends_on:
-#       - frontend
-#       - backend
-#     ports:
-#       - "80:80"
-#       - "443:443"
-#     volumes:
-#       - ./Caddyfile:/etc/caddy/Caddyfile
-#       - caddy_data:/data
-#       - caddy_config:/config
-#     networks:
-#       - aerox_net
-
-# volumes:
-#   postgres_data:
-#   caddy_data:
-#   caddy_config:
-
-# networks:
-#   aerox_net:
-#     driver: bridge
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 services:
   postgres:
     image: postgres:18-alpine
-    container_name: aerox-postgres
     restart: unless-stopped
 
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
 
     volumes:
       - postgres18_data:/var/lib/postgresql
@@ -119,19 +29,21 @@ services:
       context: ./aerox_backend
       dockerfile: Dockerfile
 
-    container_name: aerox-backend
     restart: unless-stopped
 
     env_file:
-      - ./aerox_backend/.env
+      - ${BACKEND_ENV_FILE:?BACKEND_ENV_FILE is required}
 
     environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+
+      # Always use the Compose PostgreSQL service from inside Docker.
       DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
       DB_USER: ${POSTGRES_USER}
       DB_PASS: ${POSTGRES_PASSWORD}
 
       UPLOAD_DIR: /app/uploads
-      PUBLIC_UPLOAD_BASE_URL: https://api.trendzaerox.com/uploads
+      PUBLIC_UPLOAD_BASE_URL: ${PUBLIC_UPLOAD_BASE_URL}
 
     volumes:
       - ./uploads:/app/uploads
@@ -149,54 +61,32 @@ services:
       dockerfile: Dockerfile
 
       args:
-        NEXT_PUBLIC_API_BASE: https://api.trendzaerox.com
-        NEXT_PUBLIC_API_BASE_URL: https://api.trendzaerox.com
-        NEXT_PUBLIC_API_URL: https://api.trendzaerox.com
-        API_BASE_URL: https://api.trendzaerox.com
+        NEXT_PUBLIC_API_BASE: ${PUBLIC_API_URL}
+        NEXT_PUBLIC_API_BASE_URL: ${PUBLIC_API_URL}
+        NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL}
+        NEXT_PUBLIC_RAZORPAY_KEY_ID: ${NEXT_PUBLIC_RAZORPAY_KEY_ID}
 
-    container_name: aerox-frontend
     restart: unless-stopped
 
     environment:
-      NEXT_PUBLIC_API_BASE: https://api.trendzaerox.com
-      NEXT_PUBLIC_API_BASE_URL: https://api.trendzaerox.com
-      NEXT_PUBLIC_API_URL: https://api.trendzaerox.com
-      API_BASE_URL: https://api.trendzaerox.com
+      NEXT_PUBLIC_API_BASE: ${PUBLIC_API_URL}
+      NEXT_PUBLIC_API_BASE_URL: ${PUBLIC_API_URL}
+      NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL}
+      NEXT_PUBLIC_RAZORPAY_KEY_ID: ${NEXT_PUBLIC_RAZORPAY_KEY_ID}
+
+      # Used only by Next.js server-side code inside Docker.
+      API_BASE_URL: ${INTERNAL_API_BASE_URL:-http://backend:8080}
+      INTERNAL_API_BASE_URL: ${INTERNAL_API_BASE_URL:-http://backend:8080}
 
     depends_on:
       - backend
-
-    networks:
-      - aerox_net
-
-  caddy:
-    image: caddy:2-alpine
-    container_name: aerox-caddy
-    restart: unless-stopped
-
-    depends_on:
-      - frontend
-      - backend
-
-    ports:
-      - "80:80"
-      - "443:443"
-
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./uploads:/srv/uploads:ro
-      - caddy_data:/data
-      - caddy_config:/config
 
     networks:
       - aerox_net
 
 volumes:
   postgres18_data:
-    name: aerox-postgres18-data
-
-  caddy_data:
-  caddy_config:
+    name: ${POSTGRES_VOLUME_NAME:?POSTGRES_VOLUME_NAME is required}
 
 networks:
   aerox_net:

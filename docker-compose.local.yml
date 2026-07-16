@@ -1,0 +1,18 @@
+services:
+  postgres:
+    ports:
+      - "127.0.0.1:5434:5432"
+
+  backend:
+    ports:
+      - "127.0.0.1:8080:8080"
+
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      MAIL_ENABLED: "false"
+      MAIL_FROM_EMAIL: "local-noreply@trendzaerox.test"
+      MAIL_FROM_NAME: "Trendz AeroX Local"
+
+  frontend:
+    ports:
+      - "127.0.0.1:3000:3000"

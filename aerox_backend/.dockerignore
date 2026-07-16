@@ -1,8 +1,9 @@
 target
+uploads
+
+.env
+.env.*
+!.env.example
+
 .git
 .gitignore
-.env
-HELP.md
-.mvn
-mvnw
-mvnw.cmd
