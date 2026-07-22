@@ -8,6 +8,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -23,12 +25,19 @@ public class ShiprocketTrackingScheduler {
 
     private final ShiprocketProperties properties;
 
+    private final AtomicBoolean running = new AtomicBoolean(false);
+
     @Scheduled(
             fixedDelayString = "${app.shiprocket.tracking-refresh.fixed-delay-ms:1800000}",
             initialDelayString = "${app.shiprocket.tracking-refresh.initial-delay-ms:120000}"
     )
     public void refreshOpenTracking() {
         if (!properties.isEnabled()) {
+            return;
+        }
+
+        if (!running.compareAndSet(false, true)) {
+            log.warn("Skipping overlapping Shiprocket tracking refresh");
             return;
         }
 
@@ -39,7 +48,7 @@ public class ShiprocketTrackingScheduler {
 
             if (refreshed > 0) {
                 log.info(
-                        "Shiprocket tracking refresh completed. refreshed={}",
+                        "Shiprocket scheduled tracking refresh completed. refreshed={}",
                         refreshed
                 );
             }
@@ -49,6 +58,9 @@ public class ShiprocketTrackingScheduler {
                     "Shiprocket scheduled tracking refresh failed",
                     exception
             );
+
+        } finally {
+            running.set(false);
         }
     }
 }

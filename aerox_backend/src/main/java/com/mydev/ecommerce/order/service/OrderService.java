@@ -393,20 +393,6 @@
 //             Long orderId,
 //             UpdateOrderStatusRequest request
 //     ) {
-//         Order order =
-//                 orderRepository
-//                         .findDetailedById(
-//                                 orderId
-//                         )
-//                         .orElseThrow(() ->
-//                                 new RuntimeException(
-//                                         "Order not found"
-//                                 )
-//                         );
-
-//         OrderStatus previousStatus =
-//                 order.getStatus();
-
 //         OrderStatus newStatus;
 
 //         try {
@@ -428,6 +414,46 @@
 //                             + request.status()
 //             );
 //         }
+
+//         return updateStatusAndTriggerEvents(
+//                 orderId,
+//                 newStatus
+//         );
+//     }
+
+//     public OrderResponse updateStatusFromSystem(
+//             Long orderId,
+//             OrderStatus newStatus
+//     ) {
+//         if (newStatus == null) {
+//             throw new RuntimeException(
+//                     "Order status is required"
+//             );
+//         }
+
+//         return updateStatusAndTriggerEvents(
+//                 orderId,
+//                 newStatus
+//         );
+//     }
+
+//     private OrderResponse updateStatusAndTriggerEvents(
+//             Long orderId,
+//             OrderStatus newStatus
+//     ) {
+//         Order order =
+//                 orderRepository
+//                         .findDetailedById(
+//                                 orderId
+//                         )
+//                         .orElseThrow(() ->
+//                                 new RuntimeException(
+//                                         "Order not found"
+//                                 )
+//                         );
+
+//         OrderStatus previousStatus =
+//                 order.getStatus();
 
 //         boolean reviewJobAlreadyExists =
 //                 orderReviewEmailJobRepository
@@ -1208,6 +1234,11 @@
 
 
 
+
+
+
+
+
 package com.mydev.ecommerce.order.service;
 
 import com.mydev.ecommerce.address.model.Address;
@@ -1806,9 +1837,18 @@ public class OrderService {
                 trackingUrl
         );
 
+        /*
+         * Shipment metadata may be refreshed repeatedly by Shiprocket.
+         * Never move an order backwards from OUT_FOR_DELIVERY or DELIVERED
+         * to SHIPPED merely because the AWB/courier details were refreshed.
+         */
         if (
-                order.getStatus()
-                        != OrderStatus.DELIVERED
+                order.getStatus() != OrderStatus.DELIVERED
+                        && !"OUT_FOR_DELIVERY".equals(
+                        order.getStatus() != null
+                                ? order.getStatus().name()
+                                : ""
+                )
         ) {
             order.setStatus(
                     OrderStatus.SHIPPED

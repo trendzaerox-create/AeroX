@@ -167,7 +167,6 @@
 
 
 
-
 spring:
   application:
     name: mydev-ecommerce
@@ -187,9 +186,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
-
     open-in-view: false
-
     properties:
       hibernate:
         format_sql: true
@@ -259,20 +256,30 @@ app:
 
   shiprocket:
     enabled: ${SHIPROCKET_ENABLED:true}
+
     base-url: ${SHIPROCKET_BASE_URL:https://apiv2.shiprocket.in}
+
     email: ${SHIPROCKET_EMAIL:}
     password: ${SHIPROCKET_PASSWORD:}
-    pickup-location: ${SHIPROCKET_PICKUP_LOCATION:warehouse}
 
-    default-length-cm: ${SHIPROCKET_DEFAULT_LENGTH_CM:10}
-    default-breadth-cm: ${SHIPROCKET_DEFAULT_BREADTH_CM:10}
-    default-height-cm: ${SHIPROCKET_DEFAULT_HEIGHT_CM:5}
+    pickup-location: ${SHIPROCKET_PICKUP_LOCATION:}
+
+    connect-timeout-ms: ${SHIPROCKET_CONNECT_TIMEOUT_MS:10000}
+    read-timeout-ms: ${SHIPROCKET_READ_TIMEOUT_MS:30000}
+
+    default-length-cm: ${SHIPROCKET_DEFAULT_LENGTH_CM:10.00}
+    default-breadth-cm: ${SHIPROCKET_DEFAULT_BREADTH_CM:10.00}
+    default-height-cm: ${SHIPROCKET_DEFAULT_HEIGHT_CM:5.00}
     default-weight-kg: ${SHIPROCKET_DEFAULT_WEIGHT_KG:0.50}
 
     tracking-base-url: ${SHIPROCKET_TRACKING_BASE_URL:https://shiprocket.co/tracking}
+
     token-valid-hours: ${SHIPROCKET_TOKEN_VALID_HOURS:230}
 
     webhook-secret: ${SHIPROCKET_WEBHOOK_SECRET:}
+
+    max-stored-events: ${SHIPROCKET_MAX_STORED_EVENTS:25}
+    max-stored-payload-chars: ${SHIPROCKET_MAX_STORED_PAYLOAD_CHARS:250000}
 
     tracking-refresh:
       enabled: ${SHIPROCKET_TRACKING_REFRESH_ENABLED:true}

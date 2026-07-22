@@ -1,12 +1,25 @@
-
 package com.mydev.ecommerce.shipment.model;
 
 import com.mydev.ecommerce.order.model.Order;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 @Entity
 @Table(
@@ -26,10 +39,6 @@ import java.time.OffsetDateTime;
                 )
         },
         indexes = {
-                @Index(
-                        name = "idx_shiprocket_orders_order_id",
-                        columnList = "order_id"
-                ),
                 @Index(
                         name = "idx_shiprocket_orders_awb_code",
                         columnList = "awb_code"
@@ -52,10 +61,6 @@ public class ShiprocketOrder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /*
-     * Separate mapping from your existing Order entity.
-     * This keeps the integration safe and avoids changing Order.java.
-     */
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
             name = "order_id",
@@ -105,6 +110,9 @@ public class ShiprocketOrder {
     @Column(name = "expected_delivery_at")
     private OffsetDateTime expectedDeliveryAt;
 
+    @Column(name = "pickup_generated_at")
+    private OffsetDateTime pickupGeneratedAt;
+
     @Column(name = "request_json", columnDefinition = "TEXT")
     private String requestJson;
 
@@ -117,6 +125,10 @@ public class ShiprocketOrder {
     @Column(name = "tracking_json", columnDefinition = "TEXT")
     private String trackingJson;
 
+    @Version
+    @Column(name = "version", nullable = false)
+    private long version;
+
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
@@ -125,21 +137,19 @@ public class ShiprocketOrder {
 
     @PrePersist
     public void onCreate() {
-        OffsetDateTime now =
-                OffsetDateTime.now();
+        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
 
-        if (this.createdAt == null) {
-            this.createdAt = now;
+        if (createdAt == null) {
+            createdAt = now;
         }
 
-        if (this.updatedAt == null) {
-            this.updatedAt = now;
+        if (updatedAt == null) {
+            updatedAt = now;
         }
     }
 
     @PreUpdate
     public void onUpdate() {
-        this.updatedAt =
-                OffsetDateTime.now();
+        updatedAt = OffsetDateTime.now(ZoneOffset.UTC);
     }
 }

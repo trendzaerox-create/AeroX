@@ -1,4 +1,3 @@
-
 package com.mydev.ecommerce.shipment.dto;
 
 import java.time.OffsetDateTime;

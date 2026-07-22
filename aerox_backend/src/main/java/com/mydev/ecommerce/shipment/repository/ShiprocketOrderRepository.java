@@ -1,5 +1,3 @@
-
-
 package com.mydev.ecommerce.shipment.repository;
 
 import com.mydev.ecommerce.shipment.model.ShiprocketOrder;
@@ -11,7 +9,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface ShiprocketOrderRepository extends JpaRepository<ShiprocketOrder, Long> {
+public interface ShiprocketOrderRepository
+        extends JpaRepository<ShiprocketOrder, Long> {
 
     @Query("""
         select sr
@@ -85,7 +84,7 @@ public interface ShiprocketOrderRepository extends JpaRepository<ShiprocketOrder
         select sr
         from ShiprocketOrder sr
         join fetch sr.order o
-        where o.orderNumber = :orderNumber
+        where upper(o.orderNumber) = upper(:orderNumber)
     """)
     Optional<ShiprocketOrder> findByEcommerceOrderNumberWithOrder(
             @Param("orderNumber") String orderNumber
@@ -96,7 +95,8 @@ public interface ShiprocketOrderRepository extends JpaRepository<ShiprocketOrder
         from ShiprocketOrder sr
         join fetch sr.order o
         where sr.awbCode is not null
-          and sr.awbCode <> ''
+          and trim(sr.awbCode) <> ''
+          and sr.deliveredAt is null
           and (
                 sr.status is null
                 or (
@@ -108,7 +108,8 @@ public interface ShiprocketOrderRepository extends JpaRepository<ShiprocketOrder
           )
         order by
           case when sr.lastTrackedAt is null then 0 else 1 end,
-          sr.lastTrackedAt asc
+          sr.lastTrackedAt asc,
+          sr.id asc
     """)
     List<ShiprocketOrder> findOpenOrdersForTracking(
             Pageable pageable

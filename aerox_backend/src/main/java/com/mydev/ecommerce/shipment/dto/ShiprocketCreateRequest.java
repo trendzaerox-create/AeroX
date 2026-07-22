@@ -1,39 +1,43 @@
 package com.mydev.ecommerce.shipment.dto;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
+
 import java.math.BigDecimal;
 
 public record ShiprocketCreateRequest(
 
-        /*
-         * Optional. If blank/null, app.shiprocket.pickup-location is used.
-         */
+        @Size(max = 100)
         String pickupLocation,
 
-        /*
-         * Optional package values. If null, defaults from application.yml are used.
-         */
+        @DecimalMin("0.50")
+        @DecimalMax("1000.00")
+        @Digits(integer = 4, fraction = 2)
         BigDecimal lengthCm,
 
+        @DecimalMin("0.50")
+        @DecimalMax("1000.00")
+        @Digits(integer = 4, fraction = 2)
         BigDecimal breadthCm,
 
+        @DecimalMin("0.50")
+        @DecimalMax("1000.00")
+        @Digits(integer = 4, fraction = 2)
         BigDecimal heightCm,
 
+        @DecimalMin("0.01")
+        @DecimalMax("1000.00")
+        @Digits(integer = 4, fraction = 3)
         BigDecimal weightKg,
 
-        /*
-         * Recommended true. Creates AWB immediately after Shiprocket order creation.
-         */
         Boolean assignAwb,
 
-        /*
-         * Optional. If null, Shiprocket can auto-assign based on your settings.
-         */
+        @Positive
         Integer courierId,
 
-        /*
-         * Optional. Keep false at first. After testing, set true if you want
-         * pickup generation in the same admin click.
-         */
         Boolean generatePickup
 ) {
 }

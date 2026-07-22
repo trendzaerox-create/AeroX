@@ -8,6 +8,11 @@ backups/
 *.dump
 *.sql
 
+# Allow Flyway migration SQL files
+!aerox_backend/src/main/resources/db/
+!aerox_backend/src/main/resources/db/migration/
+!aerox_backend/src/main/resources/db/migration/*.sql
+
 aerox_backend/.env
 aerox_backend/.env.*
 aerox_frontend/.env
