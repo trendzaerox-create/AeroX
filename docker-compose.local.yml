@@ -9,9 +9,9 @@ services:
 
     environment:
       SPRING_PROFILES_ACTIVE: dev
-      MAIL_ENABLED: "false"
-      MAIL_FROM_EMAIL: "local-noreply@trendzaerox.test"
-      MAIL_FROM_NAME: "Trendz AeroX Local"
+      MAIL_ENABLED: "true"
+      MAIL_FROM_EMAIL: "sales@trendzaerox.com"
+      MAIL_FROM_NAME: "Trendz AeroX"
 
   frontend:
     ports:
