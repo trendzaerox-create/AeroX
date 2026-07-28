@@ -1,4 +1,3 @@
-
 package com.mydev.ecommerce.config;
 
 import com.mydev.ecommerce.auth.security.JwtAuthFilter;
@@ -21,23 +20,34 @@ public class SecurityConfig {
 
         http
                 .csrf(csrf -> csrf.disable())
+
                 .cors(cors -> {
+                    // Uses your configured CorsConfigurationSource
+                    // or WebMvcConfigurer CORS configuration.
                 })
+
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS
                         )
                 )
+
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .formLogin(formLogin -> formLogin.disable())
 
                 .authorizeHttpRequests(auth -> auth
 
+                        /*
+                         * Allow browser CORS preflight requests.
+                         */
                         .requestMatchers(
                                 HttpMethod.OPTIONS,
                                 "/**"
                         ).permitAll()
 
+                        /*
+                         * Public health and utility endpoints.
+                         */
                         .requestMatchers(
                                 "/",
                                 "/ping",
@@ -46,26 +56,44 @@ public class SecurityConfig {
                                 "/error"
                         ).permitAll()
 
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/guest-checkout/**").permitAll()
+                        /*
+                         * Public static files.
+                         *
+                         * /uploads/** is required for locally stored product,
+                         * category, banner and other uploaded images.
+                         */
+                        .requestMatchers(
+                                "/images/**",
+                                "/uploads/**"
+                        ).permitAll()
 
-                        .requestMatchers("/api/products/**").permitAll()
-                        .requestMatchers("/api/categories/**").permitAll()
-                        .requestMatchers("/images/**").permitAll()
-                        .requestMatchers("/api/brand-showcases/**").permitAll()
-                        .requestMatchers("/api/hero-sections/**").permitAll()
-                        .requestMatchers("/api/gift-boxes/**").permitAll()
-                        .requestMatchers("/api/giftsets/**").permitAll()
-                        .requestMatchers("/api/instagram/**").permitAll()
+                        /*
+                         * Authentication and guest checkout.
+                         */
+                        .requestMatchers(
+                                "/api/auth/**",
+                                "/api/guest-checkout/**"
+                        ).permitAll()
+
+                        /*
+                         * Public storefront endpoints.
+                         */
+                        .requestMatchers(
+                                "/api/products/**",
+                                "/api/categories/**",
+                                "/api/brand-showcases/**",
+                                "/api/hero-sections/**",
+                                "/api/gift-boxes/**",
+                                "/api/giftsets/**",
+                                "/api/instagram/**"
+                        ).permitAll()
 
                         /*
                          * Razorpay Webhook
                          *
-                         * Razorpay calls this endpoint from its server without
-                         * sending the customer's JWT token.
-                         *
-                         * Security is handled using the X-Razorpay-Signature
-                         * header inside RazorpayWebhookController / PaymentService.
+                         * Razorpay calls this endpoint without a customer JWT.
+                         * Security is handled using X-Razorpay-Signature inside
+                         * RazorpayWebhookController / PaymentService.
                          */
                         .requestMatchers(
                                 HttpMethod.POST,
@@ -75,9 +103,7 @@ public class SecurityConfig {
                         /*
                          * Shiprocket Tracking Webhook
                          *
-                         * Shiprocket calls this endpoint from its server without
-                         * sending a customer or admin JWT token.
-                         *
+                         * Shiprocket calls this endpoint without a customer JWT.
                          * Security is handled using the x-api-key header inside
                          * ShiprocketWebhookController / ShiprocketService.
                          */
@@ -86,36 +112,35 @@ public class SecurityConfig {
                                 "/api/shipment-events/tracking"
                         ).permitAll()
 
+                        /*
+                         * Public form submission endpoints.
+                         */
                         .requestMatchers(
                                 HttpMethod.POST,
-                                "/api/newsletter/subscribe"
-                        ).permitAll()
-
-                        .requestMatchers(
-                                HttpMethod.POST,
+                                "/api/newsletter/subscribe",
                                 "/api/bulk-orders"
                         ).permitAll()
 
-                        .requestMatchers(
-                                "/api/admin/bulk-orders/**"
-                        ).hasRole("ADMIN")
-
                         /*
-                         * Instagram Admin
+                         * Instagram administration.
                          *
-                         * These endpoints are permitted by Spring Security,
-                         * but are protected using X-Admin-Refresh-Secret
+                         * These endpoints are permitted by Spring Security but
+                         * must remain protected using X-Admin-Refresh-Secret
                          * inside InstagramAdminController.
                          */
                         .requestMatchers(
                                 "/api/admin/instagram/**"
                         ).permitAll()
 
+                        /*
+                         * Administrator-only endpoints.
+                         *
+                         * Keep the more specific admin rules before
+                         * the general /api/admin/** rule.
+                         */
                         .requestMatchers(
-                                "/api/admin/gift-boxes/**"
-                        ).hasRole("ADMIN")
-
-                        .requestMatchers(
+                                "/api/admin/bulk-orders/**",
+                                "/api/admin/gift-boxes/**",
                                 "/api/admin/hero-sections/**"
                         ).hasRole("ADMIN")
 
@@ -123,35 +148,28 @@ public class SecurityConfig {
                                 "/api/admin/**"
                         ).hasRole("ADMIN")
 
-                        .requestMatchers(
-                                "/api/addresses/**"
-                        ).authenticated()
-
-                        .requestMatchers(
-                                "/api/orders/**"
-                        ).authenticated()
-
-                        .requestMatchers(
-                                "/api/cart/**"
-                        ).authenticated()
-
-                        .requestMatchers(
-                                "/api/giftset-cart/**"
-                        ).authenticated()
-
                         /*
-                         * Razorpay create-order and verify endpoints remain
-                         * authenticated through the rule below.
+                         * Authenticated customer endpoints.
                          */
-
                         .requestMatchers(
+                                "/api/addresses/**",
+                                "/api/orders/**",
+                                "/api/cart/**",
+                                "/api/giftset-cart/**",
                                 "/api/wishlist/**"
                         ).authenticated()
 
+                        /*
+                         * Customer or administrator endpoints.
+                         */
                         .requestMatchers(
                                 "/api/user/**"
                         ).hasAnyRole("CUSTOMER", "ADMIN")
 
+                        /*
+                         * Any endpoint not explicitly declared above
+                         * requires authentication.
+                         */
                         .anyRequest().authenticated()
                 )
 

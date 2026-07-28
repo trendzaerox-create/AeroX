@@ -9,7 +9,7 @@ import ProductCard from "@/components/ProductCard";
 import api from "@/lib/apiClient";
 
 const END_STATIC_BANNER_URL =
-  "/images/banners/Category/Category-bottom-Banner.png";
+  "/images/banners/Category/Category-bottom-Banner.webp";
 
 const PRODUCT_PAGE_SIZE = 50;
 

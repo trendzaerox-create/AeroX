@@ -1,4 +1,4 @@
-
+﻿
 "use client";
 
 import { useState } from "react";
@@ -212,7 +212,7 @@ function NewsletterForm() {
           disabled={loading}
           className="h-[52px] rounded-full bg-white px-8 text-[12px] font-bold uppercase tracking-[0.18em] text-black transition-all duration-200 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-70 sm:min-w-[165px]"
         >
-          {loading ? "Subscribing..." : "Subscribe →"}
+          {loading ? "Subscribing..." : "Subscribe â†’"}
         </button>
       </form>
 
@@ -239,7 +239,7 @@ export default function Footer() {
           <div className="lg:col-span-9">
             <div className="mb-3">
               <img
-                src="/images/logo/TrendzAeroXLogo.png"
+                src="/images/logo/TrendzAeroXLogo2.png"
                 alt="Trendz AeroX"
                 className="h-[52px] w-auto object-contain transition-all duration-500 ease-out group-hover:scale-[1.05] group-hover:opacity-90 sm:h-[56px]"
               />
@@ -286,12 +286,14 @@ export default function Footer() {
 
           <p className="text-[12px] font-medium tracking-[0.08em] text-gray-400">
             <Link href="/test" className="transition duration-300 hover:text-white">
-              ©
+              Â©
             </Link>{" "}
-            2026 — Trendz AeroX
+            2026 â€” Trendz AeroX
           </p>
         </div>
       </div>
     </footer>
   );
 }
+
+
