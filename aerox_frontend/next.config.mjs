@@ -59,38 +59,29 @@
 
 
 
-
-
 /** @type {import("next").NextConfig} */
 const nextConfig = {
   output: "standalone",
 
   images: {
     remotePatterns: [
-      // Production VPS
       {
         protocol: "https",
         hostname: "api.trendzaerox.com",
         pathname: "/uploads/**",
       },
-
-      // Local development — browser/backend on localhost
       {
         protocol: "http",
         hostname: "localhost",
         port: "8080",
         pathname: "/uploads/**",
       },
-
-      // Local development using 127.0.0.1
       {
         protocol: "http",
         hostname: "127.0.0.1",
         port: "8080",
         pathname: "/uploads/**",
       },
-
-      // Local Docker Compose
       {
         protocol: "http",
         hostname: "backend",
@@ -99,14 +90,37 @@ const nextConfig = {
       },
     ],
 
-    // Next.js will return optimised images as WebP
     formats: ["image/webp"],
 
-    // Product cards use 65.
-    // Other components may use 75 or 82.
+    /*
+     * Every quality passed to <Image> must be allowed
+     * here in Next.js 16.
+     */
     qualities: [65, 75, 82],
 
-    // Cache optimised images for at least 24 hours
+    /*
+     * Keep the generated responsive set controlled.
+     */
+    deviceSizes: [
+      640,
+      750,
+      828,
+      1080,
+      1200,
+      1440,
+      1920,
+    ],
+
+    imageSizes: [
+      32,
+      48,
+      64,
+      96,
+      128,
+      256,
+      384,
+    ],
+
     minimumCacheTTL: 86400,
   },
 };

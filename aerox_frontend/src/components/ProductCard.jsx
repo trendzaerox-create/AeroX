@@ -94,7 +94,6 @@
 
 
 
-
 "use client";
 
 import Image from "next/image";
@@ -103,13 +102,14 @@ import { useEffect, useState } from "react";
 
 import getImageUrl from "@/lib/getImageUrl";
 
+const PLACEHOLDER_IMAGE = "/placeholder.png";
+
 export default function ProductCard({ product }) {
   /*
-   * First image:
-   * Loads the lightweight -card.webp thumbnail.
+   * Product-card images are pre-generated lightweight
+   * "-card.webp" files.
    *
-   * Second image:
-   * Is not added to the DOM until hover/focus.
+   * The second image is not mounted until hover/focus.
    */
   const [loadSecondImage, setLoadSecondImage] =
     useState(false);
@@ -129,18 +129,11 @@ export default function ProductCard({ product }) {
   const firstImage = product?.images?.[0];
   const secondImage = product?.images?.[1];
 
-  /*
-   * Product cards use generated lightweight thumbnails:
-   *
-   * image.png
-   * becomes
-   * image-card.webp
-   */
   const firstCardImageUrl = firstImage
     ? getImageUrl(firstImage, {
         card: true,
       })
-    : "/placeholder.png";
+    : PLACEHOLDER_IMAGE;
 
   const resolvedSecondCardImageUrl = secondImage
     ? getImageUrl(secondImage, {
@@ -149,17 +142,12 @@ export default function ProductCard({ product }) {
     : null;
 
   /*
-   * Do not fall back to the original multi-megabyte image.
-   * A missing thumbnail shows the placeholder until all
-   * product thumbnails have been generated.
+   * Never fall back to the original large PNG/JPEG.
    */
   const firstImageUrl = firstImageFailed
-    ? "/placeholder.png"
+    ? PLACEHOLDER_IMAGE
     : firstCardImageUrl;
 
-  /*
-   * Prevent loading a duplicate second image.
-   */
   const secondImageUrl =
     !secondImageFailed &&
     resolvedSecondCardImageUrl &&
@@ -167,10 +155,6 @@ export default function ProductCard({ product }) {
       ? resolvedSecondCardImageUrl
       : null;
 
-  /*
-   * Reset image state if React reuses the card for
-   * another product.
-   */
   useEffect(() => {
     setLoadSecondImage(false);
     setShowSecondImage(false);
@@ -205,10 +189,6 @@ export default function ProductCard({ product }) {
       return;
     }
 
-    /*
-     * After the first hover, keep the second image
-     * mounted so it is not recreated repeatedly.
-     */
     setLoadSecondImage(true);
     setShowSecondImage(true);
   };
@@ -232,10 +212,8 @@ export default function ProductCard({ product }) {
       onBlur={hideSecondImage}
     >
       <article className="group flex h-full flex-col overflow-hidden rounded-[12px] border border-neutral-200 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.12)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(0,0,0,0.18)] sm:rounded-[14px] sm:shadow-[0_2px_10px_rgba(0,0,0,0.14)]">
-        {/* Product image */}
         <div className="relative flex h-[155px] items-center justify-center overflow-hidden rounded-t-[12px] bg-white sm:h-[215px] sm:rounded-t-[14px] lg:h-[230px] xl:h-[235px]">
           <div className="relative h-full w-full overflow-hidden">
-            {/* First lightweight card thumbnail */}
             <Image
               src={firstImageUrl}
               alt={
@@ -243,6 +221,13 @@ export default function ProductCard({ product }) {
                 "Product image"
               }
               fill
+              /*
+               * Intentional:
+               * the source is already a small generated WebP.
+               * Direct loading also avoids a local Docker
+               * optimizer attempting to fetch localhost:8080
+               * from inside the frontend container.
+               */
               unoptimized
               loading="lazy"
               decoding="async"
@@ -263,10 +248,6 @@ export default function ProductCard({ product }) {
               }`}
             />
 
-            {/*
-             * The second image is requested only after
-             * hover or keyboard focus.
-             */}
             {secondImageUrl &&
               loadSecondImage &&
               !secondImageFailed && (
@@ -303,14 +284,11 @@ export default function ProductCard({ product }) {
           </div>
         </div>
 
-        {/* Product information */}
         <div className="flex flex-1 flex-col px-2 pb-2 pt-1.5 sm:px-2.5 sm:pb-2 sm:pt-2">
-          {/* Product title */}
           <h3 className="line-clamp-1 text-[13px] font-bold leading-4 text-black sm:text-[15px] sm:leading-5">
             {product?.title}
           </h3>
 
-          {/* Pricing */}
           <div className="mt-1 flex flex-wrap items-center gap-1 text-[12px] leading-none sm:mt-1.5 sm:text-[13px]">
             {mrp > 0 && (
               <span className="font-medium text-neutral-500 line-through">
@@ -335,7 +313,6 @@ export default function ProductCard({ product }) {
             )}
           </div>
 
-          {/* Offer row — hidden on mobile */}
           {discountPercent > 0 && (
             <div className="mt-1.5 hidden items-center gap-1 sm:flex">
               <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#c69b2d] text-[9px] text-white">
