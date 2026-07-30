@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record ProductVariantUpdateRequest(
+
         @Size(max = 120, message = "Variant group code must not exceed 120 characters")
         String variantGroupCode,
 
@@ -19,4 +20,5 @@ public record ProductVariantUpdateRequest(
 
         @Min(value = 0, message = "Variant display order cannot be negative")
         Integer variantDisplayOrder
+
 ) {}

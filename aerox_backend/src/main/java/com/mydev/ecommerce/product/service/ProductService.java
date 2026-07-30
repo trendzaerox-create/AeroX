@@ -1,8 +1,9 @@
-
 package com.mydev.ecommerce.product.service;
 
 import com.mydev.ecommerce.product.dto.ProductResponse;
 import com.mydev.ecommerce.product.dto.ProductReviewResponse;
+import com.mydev.ecommerce.product.dto.ProductVariantCandidateResponse;
+import com.mydev.ecommerce.product.dto.ProductVariantLinkRequest;
 import com.mydev.ecommerce.product.dto.ProductVariantResponse;
 import com.mydev.ecommerce.product.dto.ProductVariantUpdateRequest;
 import com.mydev.ecommerce.product.model.Product;
@@ -19,21 +20,31 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
 
+    private static final int MAX_VARIANT_CANDIDATES = 20;
+
     private final ProductRepository repo;
     private final ProductReviewRepository reviewRepo;
 
-    public ProductService(ProductRepository repo, ProductReviewRepository reviewRepo) {
+    public ProductService(
+            ProductRepository repo,
+            ProductReviewRepository reviewRepo
+    ) {
         this.repo = repo;
         this.reviewRepo = reviewRepo;
     }
 
     @Transactional(readOnly = true)
-    public List<ProductResponse> getProducts(Long categoryId, int page, int size) {
+    public List<ProductResponse> getProducts(
+            Long categoryId,
+            int page,
+            int size
+    ) {
         int safePage = Math.max(page, 0);
         int safeSize = Math.min(Math.max(size, 1), 50);
 
@@ -72,7 +83,10 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProductResponse> getAdminProducts(int page, int size) {
+    public List<ProductResponse> getAdminProducts(
+            int page,
+            int size
+    ) {
         int safePage = Math.max(page, 0);
         int safeSize = Math.min(Math.max(size, 1), 100);
 
@@ -108,40 +122,308 @@ public class ProductService {
     }
 
     /**
-     * Replaces the colour-family metadata for one existing product.
-     * Products with the same variantGroupCode appear together on the PDP.
+     * Returns products for the admin's "Group with existing product" selector.
+     */
+    @Transactional(readOnly = true)
+    public List<ProductVariantCandidateResponse> findColorVariantCandidates(
+            String query,
+            Long excludeProductId
+    ) {
+        String safeQuery = query == null ? "" : query.trim();
+
+        return repo.searchActiveVariantCandidates(
+                        safeQuery,
+                        excludeProductId,
+                        PageRequest.of(0, MAX_VARIANT_CANDIDATES)
+                )
+                .stream()
+                .map(this::mapToCandidateResponse)
+                .toList();
+    }
+
+    /**
+     * Safely links two existing product rows as colour variants.
+     *
+     * Rules:
+     * 1. A product cannot link to itself.
+     * 2. Both products must belong to the same category.
+     * 3. Two different existing groups are never merged silently.
+     * 4. Colour names must be unique inside one group.
+     * 5. If neither product has a group, a generated group code is created.
+     */
+    @Transactional
+    public ProductResponse linkColorVariant(
+            Long productId,
+            ProductVariantLinkRequest request
+    ) {
+        if (productId.equals(request.groupWithProductId())) {
+            throw new IllegalArgumentException("A product cannot be linked to itself");
+        }
+
+        Product currentProduct = findAdminProductEntity(productId);
+        Product selectedProduct = findAdminProductEntity(request.groupWithProductId());
+
+        validateSameCategory(currentProduct, selectedProduct);
+
+        String currentGroup = normalizeGroupCode(currentProduct.getVariantGroupCode());
+        String selectedGroup = normalizeGroupCode(selectedProduct.getVariantGroupCode());
+
+        if (currentGroup != null
+                && selectedGroup != null
+                && !currentGroup.equals(selectedGroup)) {
+            throw new IllegalArgumentException(
+                    "These products already belong to different colour groups. "
+                            + "Remove one product from its current group before linking them."
+            );
+        }
+
+        String groupCode = selectedGroup != null
+                ? selectedGroup
+                : currentGroup != null
+                ? currentGroup
+                : generateGroupCode();
+
+        String currentColorName = requireText(
+                request.colorName(),
+                "Current product colour is required"
+        );
+
+        String currentColorHex = requireColorHex(
+                request.colorHex(),
+                "Current product colour hex is required"
+        );
+
+        String selectedColorName = firstNonBlank(
+                selectedProduct.getColorName(),
+                request.existingProductColorName()
+        );
+
+        String selectedColorHex = firstNonBlank(
+                selectedProduct.getColorHex(),
+                request.existingProductColorHex()
+        );
+
+        selectedColorName = requireText(
+                selectedColorName,
+                "Enter the selected product's existing colour name"
+        );
+
+        selectedColorHex = requireColorHex(
+                selectedColorHex,
+                "Enter the selected product's existing colour hex"
+        );
+
+        validateColorIsAvailable(
+                groupCode,
+                currentColorName,
+                currentProduct.getId()
+        );
+
+        validateColorIsAvailable(
+                groupCode,
+                selectedColorName,
+                selectedProduct.getId()
+        );
+
+        if (currentColorName.equalsIgnoreCase(selectedColorName)) {
+            throw new IllegalArgumentException(
+                    "Both products cannot use the same colour name in one group"
+            );
+        }
+
+        boolean currentAlreadyInGroup = groupCode.equals(currentGroup);
+        boolean selectedAlreadyInGroup = groupCode.equals(selectedGroup);
+
+        int nextOrder = getNextVariantDisplayOrder(groupCode);
+
+        selectedProduct.setVariantGroupCode(groupCode);
+        selectedProduct.setColorName(selectedColorName);
+        selectedProduct.setColorHex(selectedColorHex);
+
+        if (!selectedAlreadyInGroup) {
+            selectedProduct.setVariantDisplayOrder(
+                    currentAlreadyInGroup ? nextOrder++ : 0
+            );
+        }
+
+        currentProduct.setVariantGroupCode(groupCode);
+        currentProduct.setColorName(currentColorName);
+        currentProduct.setColorHex(currentColorHex);
+
+        if (request.variantDisplayOrder() != null) {
+            currentProduct.setVariantDisplayOrder(request.variantDisplayOrder());
+        } else if (!currentAlreadyInGroup) {
+            currentProduct.setVariantDisplayOrder(
+                    selectedAlreadyInGroup ? nextOrder : Math.max(nextOrder, 1)
+            );
+        }
+
+        repo.saveAll(List.of(selectedProduct, currentProduct));
+        repo.flush();
+
+        return buildAdminProductResponse(currentProduct.getId());
+    }
+
+    /**
+     * Directly updates one product's group metadata.
+     * Blank/null group code means "remove from colour group".
      */
     @Transactional
     public ProductResponse updateColorVariantDetails(
             Long productId,
             ProductVariantUpdateRequest request
     ) {
-        Product product = repo.findById(productId)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+        Product product = findAdminProductEntity(productId);
 
-        product.setVariantGroupCode(normalizeGroupCode(request.variantGroupCode()));
-        product.setColorName(normalizeNullableText(request.colorName()));
-        product.setColorHex(normalizeColorHex(request.colorHex()));
+        String groupCode = normalizeGroupCode(request.variantGroupCode());
+
+        if (groupCode == null) {
+            clearVariantMetadata(product);
+            repo.saveAndFlush(product);
+            return buildAdminProductResponse(productId);
+        }
+
+        String colorName = requireText(
+                request.colorName(),
+                "Colour name is required while a variant group is assigned"
+        );
+
+        String colorHex = requireColorHex(
+                request.colorHex(),
+                "Colour hex is required while a variant group is assigned"
+        );
+
+        validateGroupCategory(groupCode, product);
+        validateColorIsAvailable(groupCode, colorName, productId);
+
+        product.setVariantGroupCode(groupCode);
+        product.setColorName(colorName);
+        product.setColorHex(colorHex);
         product.setVariantDisplayOrder(
                 request.variantDisplayOrder() == null
-                        ? 0
+                        ? defaultVariantOrder(product, groupCode)
                         : request.variantDisplayOrder()
         );
 
         repo.saveAndFlush(product);
 
+        return buildAdminProductResponse(productId);
+    }
+
+    /**
+     * Removes only the variant relationship. The product remains active.
+     */
+    @Transactional
+    public ProductResponse removeColorVariant(Long productId) {
+        Product product = findAdminProductEntity(productId);
+        clearVariantMetadata(product);
+        repo.saveAndFlush(product);
+        return buildAdminProductResponse(productId);
+    }
+
+    private ProductResponse buildAdminProductResponse(Long productId) {
         Product reloaded = repo.findAdminByIdWithImages(productId)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found"));
 
-        ReviewSummary reviewSummary = getReviewSummaryMap(List.of(productId))
-                .getOrDefault(productId, new ReviewSummary(0.0, 0L));
-
         return mapToDTO(
                 reloaded,
-                false,
-                reviewSummary,
+                true,
+                null,
                 loadActiveColorVariants(reloaded)
         );
+    }
+
+    private Product findAdminProductEntity(Long productId) {
+        return repo.findById(productId)
+                .filter(product -> !product.isDeleted())
+                .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+    }
+
+    private void validateSameCategory(
+            Product currentProduct,
+            Product selectedProduct
+    ) {
+        Long currentCategoryId = currentProduct.getCategory() == null
+                ? null
+                : currentProduct.getCategory().getId();
+
+        Long selectedCategoryId = selectedProduct.getCategory() == null
+                ? null
+                : selectedProduct.getCategory().getId();
+
+        if (currentCategoryId == null
+                || selectedCategoryId == null
+                || !currentCategoryId.equals(selectedCategoryId)) {
+            throw new IllegalArgumentException(
+                    "Only products from the same category can be grouped as colour variants"
+            );
+        }
+    }
+
+    private void validateGroupCategory(
+            String groupCode,
+            Product product
+    ) {
+        if (product.getCategory() == null) {
+            throw new IllegalArgumentException("Product category is required");
+        }
+
+        boolean hasDifferentCategory =
+                repo.existsByVariantGroupCodeIgnoreCaseAndCategory_IdNotAndDeletedFalse(
+                        groupCode,
+                        product.getCategory().getId()
+                );
+
+        if (hasDifferentCategory) {
+            throw new IllegalArgumentException(
+                    "This colour group contains products from another category"
+            );
+        }
+    }
+
+    private void validateColorIsAvailable(
+            String groupCode,
+            String colorName,
+            Long excludedProductId
+    ) {
+        boolean duplicate =
+                repo.existsByVariantGroupCodeIgnoreCaseAndColorNameIgnoreCaseAndIdNotAndDeletedFalse(
+                        groupCode,
+                        colorName,
+                        excludedProductId
+                );
+
+        if (duplicate) {
+            throw new IllegalArgumentException(
+                    "Colour '" + colorName + "' already exists in this variant group"
+            );
+        }
+    }
+
+    private int defaultVariantOrder(
+            Product product,
+            String targetGroupCode
+    ) {
+        String existingGroup = normalizeGroupCode(product.getVariantGroupCode());
+
+        if (targetGroupCode.equals(existingGroup)
+                && product.getVariantDisplayOrder() != null) {
+            return product.getVariantDisplayOrder();
+        }
+
+        return getNextVariantDisplayOrder(targetGroupCode);
+    }
+
+    private int getNextVariantDisplayOrder(String groupCode) {
+        Integer maxOrder = repo.findMaxVariantDisplayOrderByGroupCode(groupCode);
+        return maxOrder == null ? 0 : maxOrder + 1;
+    }
+
+    private void clearVariantMetadata(Product product) {
+        product.setVariantGroupCode(null);
+        product.setColorName(null);
+        product.setColorHex(null);
+        product.setVariantDisplayOrder(0);
     }
 
     private ProductResponse mapToDTO(
@@ -232,7 +514,7 @@ public class ProductService {
     }
 
     private List<ProductVariantResponse> loadActiveColorVariants(Product product) {
-        String groupCode = normalizeNullableText(product.getVariantGroupCode());
+        String groupCode = normalizeGroupCode(product.getVariantGroupCode());
 
         if (groupCode == null) {
             return List.of();
@@ -265,6 +547,26 @@ public class ProductService {
         );
     }
 
+    private ProductVariantCandidateResponse mapToCandidateResponse(Product product) {
+        String thumbnailUrl = product.getImages()
+                .stream()
+                .map(image -> image.getImageUrl())
+                .filter(imageUrl -> imageUrl != null && !imageUrl.isBlank())
+                .findFirst()
+                .orElse(null);
+
+        return new ProductVariantCandidateResponse(
+                product.getId(),
+                product.getTitle(),
+                product.getCategory() == null ? null : product.getCategory().getId(),
+                product.getCategory() == null ? null : product.getCategory().getName(),
+                product.getVariantGroupCode(),
+                product.getColorName(),
+                product.getColorHex(),
+                thumbnailUrl
+        );
+    }
+
     private Comparator<Product> productComparator() {
         return Comparator
                 .comparing(
@@ -290,14 +592,24 @@ public class ProductService {
                 ));
     }
 
+    private String generateGroupCode() {
+        return "CVG-" + UUID.randomUUID()
+                .toString()
+                .toUpperCase(Locale.ROOT);
+    }
+
     private String normalizeGroupCode(String value) {
         String normalized = normalizeNullableText(value);
-        return normalized == null ? null : normalized.toUpperCase(Locale.ROOT);
+        return normalized == null
+                ? null
+                : normalized.toUpperCase(Locale.ROOT);
     }
 
     private String normalizeColorHex(String value) {
         String normalized = normalizeNullableText(value);
-        return normalized == null ? null : normalized.toUpperCase(Locale.ROOT);
+        return normalized == null
+                ? null
+                : normalized.toUpperCase(Locale.ROOT);
     }
 
     private String normalizeNullableText(String value) {
@@ -307,6 +619,37 @@ public class ProductService {
 
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private String firstNonBlank(String first, String second) {
+        String normalizedFirst = normalizeNullableText(first);
+        return normalizedFirst != null
+                ? normalizedFirst
+                : normalizeNullableText(second);
+    }
+
+    private String requireText(String value, String message) {
+        String normalized = normalizeNullableText(value);
+
+        if (normalized == null) {
+            throw new IllegalArgumentException(message);
+        }
+
+        return normalized;
+    }
+
+    private String requireColorHex(String value, String message) {
+        String normalized = normalizeColorHex(value);
+
+        if (normalized == null) {
+            throw new IllegalArgumentException(message);
+        }
+
+        if (!normalized.matches("^#(?:[0-9A-F]{3}|[0-9A-F]{6}|[0-9A-F]{8})$")) {
+            throw new IllegalArgumentException("Colour hex must look like #FFFFFF");
+        }
+
+        return normalized;
     }
 
     private Double roundAverage(Double average) {
