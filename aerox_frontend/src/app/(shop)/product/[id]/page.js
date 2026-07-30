@@ -1,3 +1,4 @@
+
 // "use client";
 
 // import { useEffect, useMemo, useRef, useState } from "react";
@@ -47,6 +48,14 @@
 //   if (isVideoUrl(url)) return "video";
 //   if (isImageUrl(url)) return "image";
 //   return "image";
+// }
+
+// function getSafeColorHex(value) {
+//   const color = String(value || "").trim();
+
+//   return /^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(color)
+//     ? color
+//     : "#e5e7eb";
 // }
 
 // function safeJsonParse(value, fallback = []) {
@@ -750,6 +759,18 @@
 //     handleZoomToggle();
 //   };
 
+//   const colorVariants = Array.isArray(product?.colorVariants)
+//     ? product.colorVariants.filter((variant) => variant?.id)
+//     : [];
+
+//   const handleColorVariantSelect = (variantId) => {
+//     if (!variantId || Number(variantId) === Number(product?.id)) return;
+
+//     setSelectedMedia("");
+//     resetZoom();
+//     router.push(`/product/${variantId}`);
+//   };
+
 //   if (!product) {
 //     return (
 //       <div
@@ -1065,6 +1086,83 @@
 //                     : "No ratings yet"}
 //                 </div>
 //               </div>
+
+//               {colorVariants.length > 1 && (
+//                 <section className="color-variant-section" aria-label="Choose colour">
+//                   <div className="color-variant-heading">
+//                     <span>Colour</span>
+//                     <strong>{product.colorName || "Selected colour"}</strong>
+//                   </div>
+
+//                   <div className="color-variant-grid">
+//                     {colorVariants.map((variant) => {
+//                       const isSelected =
+//                         Number(variant.id) === Number(product.id);
+
+//                       return (
+//                         <button
+//                           key={variant.id}
+//                           type="button"
+//                           className={`color-variant-card ${
+//                             isSelected ? "selected-color-variant" : ""
+//                           }`}
+//                           onClick={() => handleColorVariantSelect(variant.id)}
+//                           aria-pressed={isSelected}
+//                           aria-label={`Select ${
+//                             variant.colorName || variant.title || "product"
+//                           } colour`}
+//                         >
+//                           <span
+//                             className="color-swatch"
+//                             style={{
+//                               background: getSafeColorHex(variant.colorHex),
+//                             }}
+//                             aria-hidden="true"
+//                           />
+
+//                           <span className="color-variant-image-wrap">
+//                             {variant.thumbnailUrl ? (
+//                               <img
+//                                 src={getImageUrl(variant.thumbnailUrl)}
+//                                 alt={
+//                                   variant.colorName ||
+//                                   variant.title ||
+//                                   "Product colour"
+//                                 }
+//                                 className="color-variant-image"
+//                                 loading="lazy"
+//                               />
+//                             ) : (
+//                               <span className="color-variant-placeholder">
+//                                 {String(variant.colorName || "C")
+//                                   .slice(0, 1)
+//                                   .toUpperCase()}
+//                               </span>
+//                             )}
+//                           </span>
+
+//                           <span className="color-variant-copy">
+//                             <strong>
+//                               {variant.colorName || variant.title || "Colour"}
+//                             </strong>
+//                             <small>
+//                               {Number(variant.stock || 0) > 0
+//                                 ? `₹${Number(
+//                                     variant.priceInr || 0,
+//                                   ).toLocaleString("en-IN")}`
+//                                 : "Out of stock"}
+//                             </small>
+//                           </span>
+
+//                           {isSelected && (
+//                             <span className="selected-color-check">✓</span>
+//                           )}
+//                         </button>
+//                       );
+//                     })}
+//                   </div>
+//                 </section>
+//               )}
 
 //               <div className="price-stock-row">
 //                 <div className="price-block">
@@ -3596,10 +3694,256 @@
 //             min-height: 64px !important;
 //           }
 //         }
+
+
+//         .color-variant-section {
+//           margin: 0 0 24px;
+//           padding: 18px;
+//           border: 1px solid rgba(226, 232, 240, 0.95);
+//           border-radius: 20px;
+//           background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+//         }
+
+//         .color-variant-heading {
+//           display: flex;
+//           align-items: center;
+//           justify-content: space-between;
+//           gap: 12px;
+//           margin-bottom: 14px;
+//           color: #64748b;
+//           font-size: 13px;
+//           font-weight: 700;
+//         }
+
+//         .color-variant-heading strong {
+//           color: #0f172a;
+//           font-size: 14px;
+//           font-weight: 800;
+//         }
+
+//         .color-variant-grid {
+//           display: grid;
+//           grid-template-columns: repeat(2, minmax(0, 1fr));
+//           gap: 10px;
+//         }
+
+//         .color-variant-card {
+//           width: 100%;
+//           min-width: 0;
+//           display: grid;
+//           grid-template-columns: 18px 54px minmax(0, 1fr) auto;
+//           align-items: center;
+//           gap: 10px;
+//           padding: 9px 10px;
+//           border: 1px solid #dbe3ee;
+//           border-radius: 16px;
+//           background: #ffffff;
+//           color: #0f172a;
+//           text-align: left;
+//           cursor: pointer;
+//           transition:
+//             border-color 0.2s ease,
+//             box-shadow 0.2s ease,
+//             transform 0.2s ease;
+//         }
+
+//         .color-variant-card:hover {
+//           transform: translateY(-1px);
+//           border-color: #94a3b8;
+//           box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+//         }
+
+//         .color-variant-card.selected-color-variant {
+//           border: 2px solid #0f172a;
+//           padding: 8px 9px;
+//           box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
+//         }
+
+//         .color-swatch {
+//           width: 18px;
+//           height: 18px;
+//           border-radius: 999px;
+//           border: 2px solid #ffffff;
+//           box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.22);
+//         }
+
+//         .color-variant-image-wrap {
+//           width: 54px;
+//           height: 54px;
+//           border-radius: 12px;
+//           overflow: hidden;
+//           display: flex;
+//           align-items: center;
+//           justify-content: center;
+//           background: #f8fafc;
+//           border: 1px solid #e2e8f0;
+//         }
+
+//         .color-variant-image {
+//           width: 100%;
+//           height: 100%;
+//           object-fit: contain;
+//           display: block;
+//           padding: 3px;
+//           background: #ffffff;
+//         }
+
+//         .color-variant-placeholder {
+//           color: #475569;
+//           font-size: 18px;
+//           font-weight: 900;
+//         }
+
+//         .color-variant-copy {
+//           min-width: 0;
+//           display: grid;
+//           gap: 3px;
+//         }
+
+//         .color-variant-copy strong {
+//           overflow: hidden;
+//           text-overflow: ellipsis;
+//           white-space: nowrap;
+//           color: #0f172a;
+//           font-size: 13px;
+//           font-weight: 800;
+//         }
+
+//         .color-variant-copy small {
+//           color: #64748b;
+//           font-size: 11px;
+//           font-weight: 700;
+//         }
+
+//         .selected-color-check {
+//           width: 22px;
+//           height: 22px;
+//           border-radius: 999px;
+//           display: inline-flex;
+//           align-items: center;
+//           justify-content: center;
+//           background: #0f172a;
+//           color: #ffffff;
+//           font-size: 12px;
+//           font-weight: 900;
+//         }
+
+//         @media (max-width: 520px) {
+//           .color-variant-section {
+//             padding: 14px;
+//             border-radius: 16px;
+//           }
+
+//           .color-variant-grid {
+//             grid-template-columns: 1fr;
+//           }
+//         }
 //       `}</style>
 //     </>
 //   );
 // }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3716,12 +4060,31 @@ function getMediaType(url) {
   return "image";
 }
 
-function getSafeColorHex(value) {
-  const color = String(value || "").trim();
+function formatInr(value) {
+  const amount = Number(value);
 
-  return /^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(color)
-    ? color
-    : "#e5e7eb";
+  if (!Number.isFinite(amount)) return "₹0.00";
+
+  return `₹${amount.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+function getVariantThumbnail(variant) {
+  const firstImage = Array.isArray(variant?.images)
+    ? variant.images[0]
+    : null;
+
+  const rawUrl =
+    variant?.thumbnailUrl ||
+    variant?.imageUrl ||
+    variant?.primaryImageUrl ||
+    (typeof firstImage === "string"
+      ? firstImage
+      : firstImage?.imageUrl || firstImage?.url || firstImage?.mediaUrl);
+
+  return rawUrl ? getImageUrl(rawUrl) : "";
 }
 
 function safeJsonParse(value, fallback = []) {
@@ -4426,7 +4789,13 @@ export default function ProductPage() {
   };
 
   const colorVariants = Array.isArray(product?.colorVariants)
-    ? product.colorVariants.filter((variant) => variant?.id)
+    ? product.colorVariants
+        .filter((variant) => variant?.id)
+        .sort((a, b) => {
+          const aSelected = Number(a.id) === Number(product?.id) ? 1 : 0;
+          const bSelected = Number(b.id) === Number(product?.id) ? 1 : 0;
+          return bSelected - aSelected;
+        })
     : [];
 
   const handleColorVariantSelect = (variantId) => {
@@ -4754,16 +5123,32 @@ export default function ProductPage() {
               </div>
 
               {colorVariants.length > 1 && (
-                <section className="color-variant-section" aria-label="Choose colour">
+                <section
+                  className="color-variant-section"
+                  aria-label="Choose colour"
+                >
                   <div className="color-variant-heading">
-                    <span>Colour</span>
+                    <span>Colour:</span>
                     <strong>{product.colorName || "Selected colour"}</strong>
                   </div>
 
-                  <div className="color-variant-grid">
+                  <div className="color-variant-list">
                     {colorVariants.map((variant) => {
                       const isSelected =
                         Number(variant.id) === Number(product.id);
+
+                      const variantThumbnail = getVariantThumbnail(variant);
+                      const variantPrice = Number(variant.priceInr || 0);
+                      const variantMrp = Number(
+                        variant.mrpInr ||
+                          variant.originalPriceInr ||
+                          variant.mrp ||
+                          (isSelected ? product.mrpInr : 0) ||
+                          0,
+                      );
+                      const isAvailable = Number(variant.stock || 0) > 0;
+                      const showVariantMrp =
+                        variantMrp > 0 && variantMrp > variantPrice;
 
                       return (
                         <button
@@ -4771,25 +5156,18 @@ export default function ProductPage() {
                           type="button"
                           className={`color-variant-card ${
                             isSelected ? "selected-color-variant" : ""
-                          }`}
+                          } ${!isAvailable ? "unavailable-color-variant" : ""}`}
                           onClick={() => handleColorVariantSelect(variant.id)}
                           aria-pressed={isSelected}
                           aria-label={`Select ${
                             variant.colorName || variant.title || "product"
-                          } colour`}
+                          } colour${!isAvailable ? ", out of stock" : ""}`}
+                          title={variant.colorName || variant.title || "Colour"}
                         >
-                          <span
-                            className="color-swatch"
-                            style={{
-                              background: getSafeColorHex(variant.colorHex),
-                            }}
-                            aria-hidden="true"
-                          />
-
                           <span className="color-variant-image-wrap">
-                            {variant.thumbnailUrl ? (
+                            {variantThumbnail ? (
                               <img
-                                src={getImageUrl(variant.thumbnailUrl)}
+                                src={variantThumbnail}
                                 alt={
                                   variant.colorName ||
                                   variant.title ||
@@ -4807,21 +5185,20 @@ export default function ProductPage() {
                             )}
                           </span>
 
-                          <span className="color-variant-copy">
-                            <strong>
-                              {variant.colorName || variant.title || "Colour"}
-                            </strong>
-                            <small>
-                              {Number(variant.stock || 0) > 0
-                                ? `₹${Number(
-                                    variant.priceInr || 0,
-                                  ).toLocaleString("en-IN")}`
-                                : "Out of stock"}
-                            </small>
+                          <span className="color-variant-price">
+                            {formatInr(variantPrice)}
                           </span>
 
-                          {isSelected && (
-                            <span className="selected-color-check">✓</span>
+                          {showVariantMrp && (
+                            <span className="color-variant-mrp">
+                              {formatInr(variantMrp)}
+                            </span>
+                          )}
+
+                          {!isAvailable && (
+                            <span className="color-variant-stock">
+                              Out of stock
+                            </span>
                           )}
                         </button>
                       );
@@ -7364,85 +7741,100 @@ export default function ProductPage() {
 
         .color-variant-section {
           margin: 0 0 24px;
-          padding: 18px;
-          border: 1px solid rgba(226, 232, 240, 0.95);
-          border-radius: 20px;
-          background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+          min-width: 0;
         }
 
         .color-variant-heading {
           display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-          margin-bottom: 14px;
-          color: #64748b;
-          font-size: 13px;
-          font-weight: 700;
+          align-items: baseline;
+          justify-content: flex-start;
+          gap: 4px;
+          margin-bottom: 7px;
+          color: #334155;
+          font-size: 14px;
+          line-height: 1.3;
+        }
+
+        .color-variant-heading span {
+          font-weight: 500;
         }
 
         .color-variant-heading strong {
-          color: #0f172a;
+          color: #111827;
           font-size: 14px;
           font-weight: 800;
         }
 
-        .color-variant-grid {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 10px;
+        .color-variant-list {
+          display: flex;
+          align-items: stretch;
+          gap: 8px;
+          min-width: 0;
+          overflow-x: auto;
+          overflow-y: hidden;
+          padding: 2px 3px 6px;
+          scrollbar-width: thin;
+          scrollbar-color: #cbd5e1 transparent;
+        }
+
+        .color-variant-list::-webkit-scrollbar {
+          height: 5px;
+        }
+
+        .color-variant-list::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 999px;
         }
 
         .color-variant-card {
-          width: 100%;
-          min-width: 0;
-          display: grid;
-          grid-template-columns: 18px 54px minmax(0, 1fr) auto;
-          align-items: center;
-          gap: 10px;
-          padding: 9px 10px;
-          border: 1px solid #dbe3ee;
-          border-radius: 16px;
+          width: 74px;
+          min-width: 74px;
+          flex: 0 0 74px;
+          min-height: 112px;
+          display: flex;
+          flex-direction: column;
+          align-items: stretch;
+          padding: 0;
+          overflow: hidden;
+          border: 1px solid #9ca3af;
+          border-radius: 9px;
           background: #ffffff;
-          color: #0f172a;
+          color: #111827;
           text-align: left;
           cursor: pointer;
+          box-sizing: border-box;
           transition:
-            border-color 0.2s ease,
-            box-shadow 0.2s ease,
-            transform 0.2s ease;
+            border-color 0.16s ease,
+            box-shadow 0.16s ease,
+            transform 0.16s ease;
         }
 
         .color-variant-card:hover {
           transform: translateY(-1px);
-          border-color: #94a3b8;
-          box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+          border-color: #4b5563;
+          box-shadow: 0 5px 12px rgba(15, 23, 42, 0.12);
+        }
+
+        .color-variant-card:focus-visible {
+          outline: 3px solid rgba(37, 99, 235, 0.22);
+          outline-offset: 2px;
         }
 
         .color-variant-card.selected-color-variant {
-          border: 2px solid #0f172a;
-          padding: 8px 9px;
-          box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
-        }
-
-        .color-swatch {
-          width: 18px;
-          height: 18px;
-          border-radius: 999px;
-          border: 2px solid #ffffff;
-          box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.22);
+          border: 3px solid #1d5f99;
+          box-shadow: 0 0 0 1px rgba(29, 95, 153, 0.08);
         }
 
         .color-variant-image-wrap {
-          width: 54px;
-          height: 54px;
-          border-radius: 12px;
+          width: 100%;
+          height: 70px;
+          min-height: 70px;
           overflow: hidden;
           display: flex;
           align-items: center;
           justify-content: center;
-          background: #f8fafc;
-          border: 1px solid #e2e8f0;
+          background: #ffffff;
+          border-bottom: 1px solid #d1d5db;
         }
 
         .color-variant-image {
@@ -7455,57 +7847,61 @@ export default function ProductPage() {
         }
 
         .color-variant-placeholder {
-          color: #475569;
-          font-size: 18px;
-          font-weight: 900;
-        }
-
-        .color-variant-copy {
-          min-width: 0;
-          display: grid;
-          gap: 3px;
-        }
-
-        .color-variant-copy strong {
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          color: #0f172a;
-          font-size: 13px;
-          font-weight: 800;
-        }
-
-        .color-variant-copy small {
           color: #64748b;
-          font-size: 11px;
-          font-weight: 700;
+          font-size: 22px;
+          font-weight: 900;
         }
 
-        .selected-color-check {
-          width: 22px;
-          height: 22px;
-          border-radius: 999px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          background: #0f172a;
-          color: #ffffff;
+        .color-variant-price {
+          display: block;
+          padding: 5px 4px 0;
+          color: #111827;
           font-size: 12px;
-          font-weight: 900;
+          font-weight: 500;
+          line-height: 1.15;
+          white-space: nowrap;
+        }
+
+        .color-variant-mrp {
+          display: block;
+          padding: 2px 4px 5px;
+          color: #6b7280;
+          font-size: 9px;
+          font-weight: 500;
+          line-height: 1.15;
+          text-decoration: line-through;
+          white-space: nowrap;
+        }
+
+        .color-variant-stock {
+          display: block;
+          margin-top: auto;
+          padding: 2px 4px 5px;
+          color: #b91c1c;
+          font-size: 8px;
+          font-weight: 800;
+          line-height: 1.1;
+          white-space: nowrap;
+        }
+
+        .color-variant-card.unavailable-color-variant
+          .color-variant-image {
+          opacity: 0.58;
         }
 
         @media (max-width: 520px) {
-          .color-variant-section {
-            padding: 14px;
-            border-radius: 16px;
+          .color-variant-heading,
+          .color-variant-heading strong {
+            font-size: 13px;
           }
 
-          .color-variant-grid {
-            grid-template-columns: 1fr;
+          .color-variant-card {
+            width: 72px;
+            min-width: 72px;
+            flex-basis: 72px;
           }
         }
       `}</style>
     </>
   );
 }
-
