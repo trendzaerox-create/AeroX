@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { preconnect, preload } from "react-dom";
 import { useParams, useRouter } from "next/navigation";
 import { FiChevronRight } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
@@ -330,6 +331,30 @@ export default function ProductPage() {
   );
 
   const isActiveVideo = activeMedia.type === "video";
+
+  // Resource hints (React 19 / react-dom). These don't render anything and
+  // don't change behavior -- they just tell the browser to get a head start:
+  // - preconnect opens the DNS/TCP/TLS connection to the image host early,
+  //   so the actual <img> fetches later don't pay that setup cost.
+  // - preload tells the browser to start downloading the current main
+  //   image immediately, even before the <img> tag is reached in the DOM,
+  //   which helps the largest/most important image (LCP) show up sooner.
+  // React dedupes repeated calls with the same URL automatically.
+  if (activeMedia?.url) {
+    try {
+      const origin = new URL(
+        activeMedia.url,
+        typeof window !== "undefined" ? window.location.origin : "http://localhost",
+      ).origin;
+      preconnect(origin);
+    } catch {
+      // ignore malformed/relative URLs
+    }
+
+    if (!isActiveVideo) {
+      preload(activeMedia.url, { as: "image", fetchPriority: "high" });
+    }
+  }
 
   const clampZoomPosition = (x, y, scale = zoomScale) => {
     const stage = zoomStageRef.current;
@@ -3949,8 +3974,6 @@ export default function ProductPage() {
     </>
   );
 }
-
-
 
 
 
