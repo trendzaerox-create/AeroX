@@ -56,8 +56,8 @@ export default function Navbar() {
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/bestsellers", label: "BESTSELLERS" },
-    { href: "/", label: "SMART WATCH" },
-    { href: "/", label: "EARBUDS" },
+    { href: "/products?categoryId=1", label: "EARBUDS" },
+    { href: "/products?categoryId=2", label: "SMART WATCH" },
     { href: "/giftsets", label: "GIFTBOX" },
     
   ];
