@@ -5304,13 +5304,13 @@ export default function ProductPage() {
                   Buy Now
                 </button>
 
-                <button
+                {/* <button
                   type="button"
                   onClick={handleWishlist}
                   className="wishlist-pdp-btn"
                 >
                   {isWishlisted ? "♥ Added to Wishlist" : "♡ Add to Wishlist"}
-                </button>
+                </button> */}
               </div>
 
               <div className="description-box">
