@@ -1,7 +1,61 @@
+# services:
+#   postgres:
+#     ports:
+#       - "127.0.0.1:5434:5432"
+
+#   backend:
+#     ports:
+#       - "127.0.0.1:8080:8080"
+
+#     environment:
+#       SPRING_PROFILES_ACTIVE: dev
+#       MAIL_ENABLED: "true"
+#       MAIL_FROM_EMAIL: "sales@trendzaerox.com"
+#       MAIL_FROM_NAME: "Trendz AeroX"
+
+#   frontend:
+#     ports:
+#       - "127.0.0.1:3000:3000"
+
+
+
+
+
+
+
+# services:
+#   postgres:
+#     ports:
+#       - "127.0.0.1:5434:5432"
+
+#   backend:
+#     ports:
+#       - "127.0.0.1:8080:8080"
+
+#     environment:
+#       DB_URL: jdbc:postgresql://postgres:5432/aeroxdb_check
+#       SPRING_PROFILES_ACTIVE: dev
+#       MAIL_ENABLED: "true"
+#       MAIL_FROM_EMAIL: "sales@trendzaerox.com"
+#       MAIL_FROM_NAME: "Trendz AeroX"
+
+#   frontend:
+#     ports:
+#       - "127.0.0.1:3000:3000"
+
+
+
+
+
+
+
+
 services:
+
   postgres:
     ports:
       - "127.0.0.1:5434:5432"
+
 
   backend:
     ports:
@@ -9,9 +63,11 @@ services:
 
     environment:
       SPRING_PROFILES_ACTIVE: dev
+
       MAIL_ENABLED: "true"
       MAIL_FROM_EMAIL: "sales@trendzaerox.com"
       MAIL_FROM_NAME: "Trendz AeroX"
+
 
   frontend:
     ports:

@@ -5276,33 +5276,79 @@ export default function ProductPage() {
                 </span>
               </div>
 
-              <div className="action-buttons">
-                <button
-                  onClick={handleAddToCart}
-                  disabled={product.stock <= 0}
-                  className="add-to-cart-btn"
-                  style={{
-                    background:
-                      product.stock > 0
-                        ? "linear-gradient(135deg, #111827 0%, #1f2937 100%)"
-                        : "#9ca3af",
-                    cursor: product.stock > 0 ? "pointer" : "not-allowed",
-                    boxShadow:
-                      product.stock > 0
-                        ? "0 12px 24px rgba(17,24,39,0.18)"
-                        : "none",
-                  }}
-                >
-                  {product.stock > 0 ? "Add To Cart" : "Out of Stock"}
-                </button>
 
-                <button
+
+
+
+
+
+
+
+              <div className="action-buttons">
+                 <button
+    onClick={handleAddToCart}
+    disabled={product.stock <= 0}
+    className="add-to-cart-btn"
+    style={{
+      background: product.stock > 0 ? "#000000" : "#9ca3af",
+      color: "#ffffff",
+      cursor: product.stock > 0 ? "pointer" : "not-allowed",
+      boxShadow:
+        product.stock > 0
+          ? "0 12px 24px rgba(0, 0, 0, 0.18)"
+          : "none",
+    }}
+  >
+    {product.stock > 0 ? "Add To Cart" : "Out of Stock"}
+  </button>
+
+                {/* <button
                   onClick={handleBuyNow}
                   disabled={product.stock <= 0}
                   className="buy-now-btn"
                 >
                   Buy Now
-                </button>
+                </button> */}
+
+
+                <button
+  onClick={handleBuyNow}
+  disabled={product.stock <= 0}
+  className="buy-now-btn"
+>
+  <span className="buy-now-content">
+    {/* Arrow / Buy icon */}
+    <svg
+      className="buy-now-arrow"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M5 12.5L19 5L14.2 19L11.4 13.6L5 12.5Z"
+        fill="white"
+      />
+    </svg>
+
+    <span className="buy-now-text">Buy Now</span>
+
+    <span className="payment-icons">
+      <span className="payment-icon">
+        <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/google-pay-icon.png" alt="Google Pay" />
+      </span>
+
+      <span className="payment-icon">
+        <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/phonepe-icon.png" alt="PhonePe" />
+      </span>
+
+      <span className="payment-icon">
+        <img src="https://1000logos.net/wp-content/uploads/2021/03/Paytm_Logo.jpg" alt="Paytm" />
+      </span>
+    </span>
+  </span>
+</button>
+
+
 
                 {/* <button
                   type="button"
@@ -6213,16 +6259,20 @@ export default function ProductPage() {
           gap: 14px;
         }
 
+        
+
         .add-to-cart-btn,
         .buy-now-btn,
         .wishlist-pdp-btn {
-          width: 100%;
-          padding: 17px 24px;
-          border-radius: 18px;
-          font-weight: 800;
-          font-size: 15px;
-          transition: all 0.28s ease;
-          letter-spacing: 0.01em;
+        width: 100%;
+        height: 44px;
+        border: none;
+        border-radius: 14px;
+        background: #000000;
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
         }
 
         .add-to-cart-btn {
@@ -7939,6 +7989,123 @@ export default function ProductPage() {
             flex-basis: 72px;
           }
         }
+
+
+
+
+
+
+
+        .buy-now-btn {
+  width: 100%;
+  height: 44px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #000000;
+  color: #ffffff;
+
+  border: none;
+  border-radius: 14px;
+
+  cursor: pointer;
+
+  padding: 0 18px;
+
+  font-family: inherit;
+
+  transition:
+    transform 0.15s ease,
+    background-color 0.15s ease,
+    opacity 0.15s ease;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+.buy-now-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.buy-now-arrow {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.buy-now-text {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.payment-icons {
+  display: flex;
+  align-items: center;
+
+  /* makes the circles slightly overlap like screenshot */
+  margin-left: 2px;
+}
+
+.payment-icon {
+  width: 20px;
+  height: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #ffffff;
+  border-radius: 50%;
+
+  overflow: hidden;
+
+  margin-left: -3px;
+
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.payment-icon:first-child {
+  margin-left: 0;
+}
+
+.payment-icon img {
+  width: 15px;
+  height: 15px;
+  object-fit: contain;
+  display: block;
+}
+
+
+/* Desktop hover */
+@media (hover: hover) {
+  .buy-now-btn:hover:not(:disabled) {
+    background: #151515;
+    transform: translateY(-1px);
+  }
+}
+
+.buy-now-btn:active:not(:disabled) {
+  transform: scale(0.985);
+}
+
+
+/* Out of stock */
+.buy-now-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+
+
+
       `}</style>
     </>
   );

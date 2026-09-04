@@ -1,5 +1,109 @@
 
+# services:
+#   postgres:
+#     image: postgres:18-alpine
+#     restart: unless-stopped
+
+#     environment:
+#       POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+#       POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+#       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+
+#     volumes:
+#       - postgres18_data:/var/lib/postgresql
+
+#     healthcheck:
+#       test:
+#         - CMD-SHELL
+#         - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+#       interval: 10s
+#       timeout: 5s
+#       retries: 10
+#       start_period: 20s
+
+#     networks:
+#       - aerox_net
+
+#   backend:
+#     build:
+#       context: ./aerox_backend
+#       dockerfile: Dockerfile
+
+#     restart: unless-stopped
+
+#     env_file:
+#       - ${BACKEND_ENV_FILE:?BACKEND_ENV_FILE is required}
+
+#     environment:
+#       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+
+#       # Always use the Compose PostgreSQL service from inside Docker.
+#       DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+#       DB_USER: ${POSTGRES_USER}
+#       DB_PASS: ${POSTGRES_PASSWORD}
+
+#       UPLOAD_DIR: /app/uploads
+#       PUBLIC_UPLOAD_BASE_URL: ${PUBLIC_UPLOAD_BASE_URL}
+
+#     volumes:
+#       - ./uploads:/app/uploads
+
+#     depends_on:
+#       postgres:
+#         condition: service_healthy
+
+#     networks:
+#       - aerox_net
+
+#   frontend:
+#     build:
+#       context: ./aerox_frontend
+#       dockerfile: Dockerfile
+
+#       args:
+#         NEXT_PUBLIC_API_BASE: ${PUBLIC_API_URL}
+#         NEXT_PUBLIC_API_BASE_URL: ${PUBLIC_API_URL}
+#         NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL}
+#         NEXT_PUBLIC_RAZORPAY_KEY_ID: ${NEXT_PUBLIC_RAZORPAY_KEY_ID}
+
+#     restart: unless-stopped
+
+#     environment:
+#       NEXT_PUBLIC_API_BASE: ${PUBLIC_API_URL}
+#       NEXT_PUBLIC_API_BASE_URL: ${PUBLIC_API_URL}
+#       NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL}
+#       NEXT_PUBLIC_RAZORPAY_KEY_ID: ${NEXT_PUBLIC_RAZORPAY_KEY_ID}
+
+#       # Used only by Next.js server-side code inside Docker.
+#       API_BASE_URL: ${INTERNAL_API_BASE_URL:-http://backend:8080}
+#       INTERNAL_API_BASE_URL: ${INTERNAL_API_BASE_URL:-http://backend:8080}
+
+#     depends_on:
+#       - backend
+
+#     networks:
+#       - aerox_net
+
+# volumes:
+#   postgres18_data:
+#     name: ${POSTGRES_VOLUME_NAME:?POSTGRES_VOLUME_NAME is required}
+
+# networks:
+#   aerox_net:
+#     driver: bridge
+
+
+
+
+
+
+
+
+
+
+
 services:
+
   postgres:
     image: postgres:18-alpine
     restart: unless-stopped
@@ -24,6 +128,7 @@ services:
     networks:
       - aerox_net
 
+
   backend:
     build:
       context: ./aerox_backend
@@ -32,18 +137,21 @@ services:
     restart: unless-stopped
 
     env_file:
-      - ${BACKEND_ENV_FILE:?BACKEND_ENV_FILE is required}
+      - ${BACKEND_ENV_FILE}
 
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
 
-      # Always use the Compose PostgreSQL service from inside Docker.
       DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
       DB_USER: ${POSTGRES_USER}
       DB_PASS: ${POSTGRES_PASSWORD}
 
       UPLOAD_DIR: /app/uploads
+
+      PUBLIC_API_URL: ${PUBLIC_API_URL}
       PUBLIC_UPLOAD_BASE_URL: ${PUBLIC_UPLOAD_BASE_URL}
+
+      FRONTEND_URL: ${FRONTEND_URL}
 
     volumes:
       - ./uploads:/app/uploads
@@ -54,6 +162,7 @@ services:
 
     networks:
       - aerox_net
+
 
   frontend:
     build:
@@ -72,9 +181,9 @@ services:
       NEXT_PUBLIC_API_BASE: ${PUBLIC_API_URL}
       NEXT_PUBLIC_API_BASE_URL: ${PUBLIC_API_URL}
       NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL}
+
       NEXT_PUBLIC_RAZORPAY_KEY_ID: ${NEXT_PUBLIC_RAZORPAY_KEY_ID}
 
-      # Used only by Next.js server-side code inside Docker.
       API_BASE_URL: ${INTERNAL_API_BASE_URL:-http://backend:8080}
       INTERNAL_API_BASE_URL: ${INTERNAL_API_BASE_URL:-http://backend:8080}
 
@@ -84,9 +193,11 @@ services:
     networks:
       - aerox_net
 
+
 volumes:
   postgres18_data:
     name: ${POSTGRES_VOLUME_NAME:?POSTGRES_VOLUME_NAME is required}
+
 
 networks:
   aerox_net:
